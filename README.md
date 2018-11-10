@@ -10,7 +10,7 @@ Nowadays, wechat posts are very common and people read traditional webpages in l
 
 ## Path to achieve our aim
 
-1. Build Developping environment
+1. Build Developping environment (Turn on Wordpress Debug Mode in `config.php`)
 1. Learn PHP Programming by Doing
 1. Design Modules(PHP Functions) to achieve each sub-goals
 1. Deployment on Real Environment and Testing
