@@ -65,8 +65,8 @@ function ws_get_history_url(){
 	    array(
             'appId' => get_option('appid'),
             'appSecret'	=> get_option('appsecret'),
-            'get_access_token' => ws_get_access_token,
-            'save_access_token' => ws_save_access_token
+            'get_access_token' => 'ws_get_access_token',
+            'save_access_token' => 'ws_save_access_token'
         )
     );
     list($err, $data) = $api->get_material_count();
