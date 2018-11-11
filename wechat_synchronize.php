@@ -14,8 +14,8 @@ Author URI: https://github.com/zhaofeng-shu33
 */
 
 // include third party depedency
-require "wechat-php-sdk/autoload.php";
 namespace Gaoming13\WechatPhpSdk;
+require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
 use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
