@@ -11,4 +11,13 @@ Author: zhaofeng-shu33
 Version: 0.1
 Author URI: https://github.com/zhaofeng-shu33
 */
+if (is_admin()) {
+	add_action('admin_menu', 'ws_admin_menu');
+}
+function ws_admin_menu(){
+    add_options_page('ws options', 'ws', 'manage_options', 'ws-unique-identifier', 'ws_plugin_options');
+}
+function ws_plugin_options(){
+    
+}
 ?>
