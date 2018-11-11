@@ -27,3 +27,5 @@ Note: The public IP address is used for the whitelist of the wechat public domai
 ### Playing with the API
 
 After successfully deploying the developping environment, you need to write some simple PHP functions to deal with the wechat api.
+
+Use `doxygen` at the project root to generate the document.
