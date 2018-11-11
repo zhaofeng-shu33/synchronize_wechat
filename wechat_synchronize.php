@@ -14,7 +14,6 @@ Author URI: https://github.com/zhaofeng-shu33
 */
 
 // include third party depedency
-namespace Gaoming13\WechatPhpSdk;
 require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
@@ -23,7 +22,7 @@ use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
     // this action is used to trigger synchronization of previous articles
-    add_action('int', 'ws_process_request');
+    add_action('init', 'ws_process_request');
 }
 function ws_admin_menu(){
     add_options_page('ws options', 'ws', 'manage_options', 'ws-unique-identifier', 'ws_plugin_options');
