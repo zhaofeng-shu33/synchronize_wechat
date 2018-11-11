@@ -16,8 +16,13 @@ if (is_admin()) {
 }
 function ws_admin_menu(){
     add_options_page('ws options', 'ws', 'manage_options', 'ws-unique-identifier', 'ws_plugin_options');
+    add_action('admin_init', 'register_ws_settings');
+}
+function register_ws_settings(){
+    register_setting('ws-settings-group', 'appid');
+    register_setting('ws-settings-group', 'appsecret');
 }
 function ws_plugin_options(){
-    
+    require_once 'setting-page.php'
 }
 ?>
