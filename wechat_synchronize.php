@@ -23,6 +23,6 @@ function register_ws_settings(){
     register_setting('ws-settings-group', 'appsecret');
 }
 function ws_plugin_options(){
-    require_once 'setting-page.php'
+    require_once 'setting-page.php';
 }
 ?>
