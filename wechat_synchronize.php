@@ -25,4 +25,22 @@ function register_ws_settings(){
 function ws_plugin_options(){
     require_once 'setting-page.php';
 }
+/*
+Input: valid access token
+Output: url list of current wechat account prior to current date
+*/
+function ws_get_history_url(){
+
+}
+/*
+Input: void
+Output: valid access token
+Reason: adapt for wordpress architecture
+Implementation Detail: first check whether the access_token is valid,
+make new request if the access_token is expired and store it in wp_database, otherwise return the valid access_token.
+*/
+function ws_get_access_token(){
+
+}
+
 ?>
