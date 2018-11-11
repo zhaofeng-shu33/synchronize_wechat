@@ -70,7 +70,8 @@ function ws_get_history_url(){
         )
     );
     list($err, $data) = $api->get_material_count();
-    echo $data->news_count;
+    $file = plugin_dir_path(__FILE__) . 'log.txt';
+    file_put_contents($file, $data->news_count, FILE_APPEND);
 }
 
 function ws_process_request(){
