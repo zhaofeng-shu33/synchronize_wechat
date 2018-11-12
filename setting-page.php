@@ -19,7 +19,7 @@
 </form>
 <form>
 <div>
-<p>Sync preivous articles:</p>
+<p>Get preivous articles Url</p>
 <label for="ws_Yes">Yes</label>
 <input type="radio" name="ws_history" id="ws_Yes"/>
 <label for="ws_No">No</label>
@@ -27,4 +27,14 @@
 </div>
 <?php submit_button(); ?>
 </form>
+<form>
+<div>
+<p>Sync preivous articles:</p>
+<textarea value="<?php foreach ($url_list as $url){ echo $url . '<br>' }?>">
+</textarea>
+<input type="radio" name="ws_sync" checked/>
+</div>
+<?php submit_button(); ?>
+</form>
+
 </div>

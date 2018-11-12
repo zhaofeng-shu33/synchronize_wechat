@@ -18,7 +18,7 @@ require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
 use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
-
+global $url_list = array();
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
     // this action is used to trigger synchronization of previous articles
@@ -72,7 +72,6 @@ function ws_get_history_url(){
     list($err, $data) = $api->get_material_count();
     // each time maximal 20 articles fetch is allowed
     $offset = 0;
-    $url_list = array();
     $file = plugin_dir_path(__FILE__) . 'log.txt';
 
     while($offset < $data->news_count){
