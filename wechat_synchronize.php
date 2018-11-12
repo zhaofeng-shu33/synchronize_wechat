@@ -77,8 +77,8 @@ function ws_get_history_url(){
     while($offset < $data->news_count){
         list($err, $data) = $api->get_materials('news', $offset, 20);
         // extract urls of each article from $data list and append it to an array
-        for($i=0; $i<count($data->content->news_item); $i++){
-            $url = $data->content->news_item[$i]->url;
+        for($i=0; $i<count($data->content['news_item']); $i++){
+            $url = $data->content['news_item'][$i]->url;
             array_push($url_list, $url);
             file_put_contents($file, $url . '\n', FILE_APPEND);
         }
