@@ -18,7 +18,8 @@ require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
 use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
-global $url_list = array();
+global $url_list;
+$url_list = array();
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
     // this action is used to trigger synchronization of previous articles

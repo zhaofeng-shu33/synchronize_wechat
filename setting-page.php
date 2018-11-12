@@ -30,7 +30,8 @@
 <form>
 <div>
 <p>Sync preivous articles:</p>
-<textarea value="<?php foreach ($url_list as $url){ echo $url . '<br>' }?>">
+<textarea value="<?php global $url_list;
+foreach ($url_list as $url){ echo $url . '<br>'; }?>">
 </textarea>
 <input type="radio" name="ws_sync" checked/>
 </div>
