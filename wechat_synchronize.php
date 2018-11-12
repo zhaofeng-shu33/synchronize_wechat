@@ -79,10 +79,14 @@ function ws_get_history_url(){
         list($err, $material) = $api->get_materials('news', $offset, 20);
         // extract urls of each article from $material list and append it to an array
         for($i=0; $i<count($material->item); $i++){
-            $url = $material->item[$i]->content->url;
-            array_push($url_list, $url);
-            file_put_contents($file, $url . '\n', FILE_APPEND);
+            $news_item = $material->item[$i]->content->news_item;
+            for($j=0; $j<count($news_item); $j++){
+                $url = $news_item[$j]->url;
+                array_push($url_list, $url);
+            }
+            file_put_contents($file, $url . "\n", FILE_APPEND);
         }
+        $offset += 20;
     }
 }
 
