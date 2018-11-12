@@ -40,11 +40,13 @@ function ws_insert_by_url($urls) {
 			break;
 		}
 		if ($html == '') {
+            $url = str_replace('http://', 'https://', $url);
 			$ch = curl_init();
 			$timeout = 30;
 			curl_setopt($ch, CURLOPT_URL, $url);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
 			$html = curl_exec($ch);
 			curl_close($ch);
 		}
@@ -61,6 +63,8 @@ function ws_insert_by_url($urls) {
 		}
 		$dom  = str_get_html($html);
 		// ÎÄÕÂ±êÌâ
+        $file = plugin_dir_path(__FILE__) . 'log.txt';
+        file_put_contents($file, $html . "\n", FILE_APPEND);
 		preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
 		$_REQUEST['post_title'] = trim($matches[2]);
 		$title = $_REQUEST['post_title'];
