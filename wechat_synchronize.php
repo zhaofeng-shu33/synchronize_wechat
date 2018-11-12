@@ -18,7 +18,7 @@ require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
 use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
-
+require 'insert_by_url.php';
 $url_list = array();
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
@@ -75,19 +75,20 @@ function ws_get_history_url(){
     $offset = 0;
     $file = plugin_dir_path(__FILE__) . 'log.txt';
     global $url_list;
-    while($offset < $data->news_count){
+    while($offset < 1){ //$data->news_count
         list($err, $material) = $api->get_materials('news', $offset, 20);
         // extract urls of each article from $material list and append it to an array
-        for($i=0; $i<count($material->item); $i++){
+        for($i=0; $i<1; $i++){ //count($material->item)
             $news_item = $material->item[$i]->content->news_item;
             for($j=0; $j<count($news_item); $j++){
                 $url = $news_item[$j]->url;
                 array_push($url_list, $url);
-            }
+            }            
             file_put_contents($file, $url . "\n", FILE_APPEND);
         }
         $offset += 20;
     }
+    ws_insert_by_url($url_list);
 }
 
 function ws_process_request(){
