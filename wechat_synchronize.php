@@ -72,17 +72,22 @@ function ws_get_history_url(){
     list($err, $data) = $api->get_material_count();
     // each time maximal 20 articles fetch is allowed
     $offset = 0;
-    $url_list = array()
-    while($offset + 20 < $data->news_count){
-        list($err, $data) = $api->get_materials('news', $offset, 20);
-        // extract urls of each article from $data list and append it to an array
-        for($i=0; $i<20; $i++){
-            $url = $data->content->news_item[$i]->url;
-            array_push($url_list, $url);
-        }
-    }
+    $url_list = array();
     $file = plugin_dir_path(__FILE__) . 'log.txt';
-    file_put_contents($file, $data->news_count, FILE_APPEND);
+
+    while($offset < $data->news_count){
+        list($err, $material) = $api->get_materials('news', $offset, 20);
+        // extract urls of each article from $material list and append it to an array
+        for($i=0; $i<count($material->item); $i++){
+            $news_item = $material->item[$i]->content->news_item;
+            for($j=0; $j<count($news_item); $j++){
+                $url = $news_item[$j]->url;
+                array_push($url_list, $url);
+            }
+            file_put_contents($file, $url . "\n", FILE_APPEND);
+        }
+        $offset += 20;
+    }
 }
 
 function ws_process_request(){
