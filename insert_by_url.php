@@ -133,8 +133,8 @@ function ws_insert_by_url($urls) {
 		}
 
 		// 是否改变作者，默认是当前登录作者
-		$userName = $dom->find('#post-user', 0)->plaintext;
-		$userName = esc_html($userName);
+		// $userName = $dom->find('#post-user', 0)->plaintext;
+		// $userName = esc_html($userName);
 		if ($changeAuthor) {
 			// 创建用户
 			$userId   = wp_create_user($bizVal, $bizVal);
