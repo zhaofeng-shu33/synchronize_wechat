@@ -102,7 +102,6 @@ function ws_process_request(){
         file_put_contents($file, '');        
         $urls_str = $_REQUEST['given_urls'];
         if($urls_str != ''){
-            file_put_contents($file, $urls_str . "\n", FILE_APPEND);
             global $url_list;
             $url_list = explode("\n", $urls_str);
             ws_insert_by_url($url_list);
