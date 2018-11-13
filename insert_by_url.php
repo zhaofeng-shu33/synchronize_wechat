@@ -77,7 +77,7 @@ function ws_insert_by_url($urls) {
 			continue;
 		}
 		// 同步任务检查标题是否重复，若重复则跳过
-		if ($id = post_exists($title) && $schedule) {
+		if ($id = post_exists($title)) {
 			$GLOBALS['errMsg'][] = array(
 				'url' => $url,
 				'msg' => '标题重复'

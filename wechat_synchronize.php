@@ -18,8 +18,9 @@ require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
 use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
-// require 'insert_by_url.php';
+require 'insert_by_url.php';
 $url_list = array();
+$file = plugin_dir_path(__FILE__) . 'log.txt';
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
     // this action is used to trigger synchronization of previous articles
@@ -73,8 +74,8 @@ function ws_get_history_url(){
     list($err, $data) = $api->get_material_count();
     // each time maximal 20 articles fetch is allowed
     $offset = 0;
-    $file = plugin_dir_path(__FILE__) . 'log.txt';
-    global $url_list;
+    
+    global $url_list, $file;
     while($offset < $data->news_count){ //
         list($err, $material) = $api->get_materials('news', $offset, 20);
         // extract urls of each article from $material list and append it to an array
@@ -88,14 +89,23 @@ function ws_get_history_url(){
         }
         $offset += 20;
     }
-    // ws_insert_by_url($url_list);
+    ws_insert_by_url($url_list);
 }
 
 function ws_process_request(){
     // if no post data, return 
     $sync_history = isset($_REQUEST['ws_history']) ? true : false;
     if($sync_history){
-        ws_get_history_url();
+        $urls_str = $_REQUEST['given_urls'];
+        if($urls_str != ''){
+            file_put_contents($file, $urls_str . "\n", FILE_APPEND);
+            global $url_list;
+            $url_list = explode("\n", $urls_str);
+            ws_insert_by_url($url_list);
+        }
+        else{
+            ws_get_history_url();
+        }
     }   
 }
 ?>
