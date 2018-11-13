@@ -21,6 +21,8 @@ use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
 require 'insert_by_url.php';
 $url_list = array();
 $file = plugin_dir_path(__FILE__) . 'log.txt';
+// each new request empty the log file
+file_put_contents($file, '');
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
     // this action is used to trigger synchronization of previous articles
