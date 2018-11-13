@@ -253,7 +253,7 @@ function ws_downloadImage($postId, $dom) {
 		} else {
 			$fileName = 'ws-plugin-' . $version . '-' . $postId . '-' . time() .'.' . $type;
 		}
-        $id = post_exists($title)
+        $id = post_exists($title);
         if($id==0){
     		$tmpFile = download_url($src);
 
