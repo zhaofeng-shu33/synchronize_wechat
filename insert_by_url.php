@@ -34,7 +34,7 @@ function ws_insert_by_url($urls) {
 			continue;
 		}
 		if (function_exists('file_get_contents')) {
-            file_put_contents($file, "function_exists: file_get_contents" . "\n", FILE_APPEND);
+            // file_put_contents($file, "function_exists: file_get_contents" . "\n", FILE_APPEND);
 			$html = @file_get_contents($url);
 		} else {
 			$GLOBALS['errMsg'][] = '不支持file_get_contents';
@@ -79,6 +79,7 @@ function ws_insert_by_url($urls) {
 			continue;
 		}
 		// 同步任务检查标题是否重复，若重复则跳过
+        file_put_contents($file, "post id :" . post_exists($title) . "\n", FILE_APPEND);
 		if ($id = post_exists($title)) {
 			$GLOBALS['errMsg'][] = array(
 				'url' => $url,
@@ -247,18 +248,22 @@ function ws_downloadImage($postId, $dom) {
 		if (!$type || $type == 'other') {
 			$type = 'jpeg';
 		}
-		$tmpFile = download_url($src);
 		if ($schedule) {
 			$fileName = 'ws-schedule-' . $version . '-' . $postId . '-' . time() .'.' . $type;
 		} else {
 			$fileName = 'ws-plugin-' . $version . '-' . $postId . '-' . time() .'.' . $type;
 		}
-		$fileArr = array(
-			'name' => $fileName,
-			'tmp_name' => $tmpFile
-		);
+        $id = post_exists($title)
+        if($id==0){
+    		$tmpFile = download_url($src);
 
-		$id = @media_handle_sideload($fileArr, $postId);
+		    $fileArr = array(
+			    'name' => $fileName,
+			    'tmp_name' => $tmpFile
+		    );
+
+    		$id = @media_handle_sideload($fileArr, $postId);
+        }
 		if (is_wp_error($id)) {
 			$GLOBALS['errMsg'][] = array(
 				'src'  => $src,
