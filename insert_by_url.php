@@ -80,7 +80,7 @@ function ws_insert_by_url($urls) {
 		}
 		// 同步任务检查标题是否重复，若重复则跳过
         file_put_contents($file, "post id :" . post_exists($title) . "\n", FILE_APPEND);
-		if ($id = post_exists($title)) {
+		if (post_exists($title) != 0) {
 			$GLOBALS['errMsg'][] = array(
 				'url' => $url,
 				'msg' => '标题重复'
@@ -195,6 +195,7 @@ function ws_insert_by_url($urls) {
 			'post_type'	    => $postType
 		);
 		$postId = @wp_insert_post($post);
+        file_put_contents($file, "add new post id to db:" . $postId . "\n", FILE_APPEND);
 		// 公众号设置featured image
 		$setFeaturedImage  = get_option('bp_featured_image', 'yes') == 'yes';
 		if ($setFeaturedImage) {
