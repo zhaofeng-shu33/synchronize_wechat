@@ -98,6 +98,7 @@ function ws_process_request(){
     if($sync_history){
         $urls_str = $_REQUEST['given_urls'];
         if($urls_str != ''){
+            global $file;
             file_put_contents($file, $urls_str . "\n", FILE_APPEND);
             global $url_list;
             $url_list = explode("\n", $urls_str);

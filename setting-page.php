@@ -19,12 +19,13 @@
 </form>
 <form>
 <div>
-<p>Get preivous articles Url</p>
+    <p>Get preivous articles Url</p>
     <label for="ws_Yes">Yes</label>
     <input type="radio" name="ws_history" id="ws_Yes"/>
     <label for="ws_No">No</label>
     <input type="radio" name="ws_history" id="ws_No"/>
 
+     <p>Keep original style</p>
     <select class="custom-select" name="keep_style">
 	    <option value="keep" selected>Yes</option>
 	    <option value="remove">No</option>
