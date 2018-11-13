@@ -262,8 +262,8 @@ function ws_downloadImage($postId, $dom) {
 			    'name' => $fileName,
 			    'tmp_name' => $tmpFile
 		    );
-
     		$id = @media_handle_sideload($fileArr, $postId);
+            file_put_contents($file, "add new media to db, with id=" . $id . "\n", FILE_APPEND);
         }
 		if (is_wp_error($id)) {
 			$GLOBALS['errMsg'][] = array(

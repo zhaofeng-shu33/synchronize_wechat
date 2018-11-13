@@ -18,7 +18,7 @@ require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
 use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
-require 'insert_by_url.php';
+require_once 'insert_by_url.php';
 $url_list = array();
 $file = plugin_dir_path(__FILE__) . 'log.txt';
 // each new request empty the log file
