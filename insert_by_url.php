@@ -25,7 +25,7 @@ function ws_insert_by_url($urls) {
 
 	$postId         = null;
 	$urls           = str_replace('https', 'http', $urls);
-
+    global $file;
 	foreach ($urls as $url) {
 		if (strpos($url, 'http://mp.weixin.qq.com/s') !== false || strpos($url, 'https://mp.weixin.qq.com/s') !== false) {
 			$url =  trim($url);
@@ -34,6 +34,7 @@ function ws_insert_by_url($urls) {
 			continue;
 		}
 		if (function_exists('file_get_contents')) {
+            file_put_contents($file, "function_exists: file_get_contents" . "\n", FILE_APPEND);
 			$html = @file_get_contents($url);
 		} else {
 			$GLOBALS['errMsg'][] = '不支持file_get_contents';
@@ -41,6 +42,7 @@ function ws_insert_by_url($urls) {
 		}
 		if ($html == '') {
             $url = str_replace('http://', 'https://', $url);
+            file_put_contents($file, "URL: " . $url . "\n", FILE_APPEND);
 			$ch = curl_init();
 			$timeout = 30;
 			curl_setopt($ch, CURLOPT_URL, $url);
@@ -63,11 +65,11 @@ function ws_insert_by_url($urls) {
 		}
 		$dom  = str_get_html($html);
 		// 文章标题
-        $file = plugin_dir_path(__FILE__) . 'log.txt';
-        file_put_contents($file, $html . "\n", FILE_APPEND);
 		preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
 		$_REQUEST['post_title'] = trim($matches[2]);
 		$title = $_REQUEST['post_title'];
+        
+        file_put_contents($file, "Title:" . $title . "\n", FILE_APPEND);
 		// 确保有标题
 		if (!$title) {
 			$GLOBALS['errMsg'][] = array(
