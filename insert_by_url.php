@@ -273,7 +273,13 @@ function ws_downloadImage($postId, $dom) {
 			$image->setAttribute('title', $title);
 		}
 	}
-	$userName = $dom->find('#profileBt a', 0)->plaintext;
+	$userName = $dom->find('#profileBt a', 0);
+     if($userName){
+      $userName = $userName->plaintext;
+     }
+     else{ // handle 转载
+         $userName = $dom->find('#original_account_nickname', 0)->plaintext;
+     }
 	$userName = esc_html($userName);
 	// 保留来源
 	$keepSource     = isset($_REQUEST['keep_source']) && $_REQUEST['keep_source'] == 'keep';
