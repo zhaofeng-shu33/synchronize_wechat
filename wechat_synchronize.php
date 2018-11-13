@@ -22,7 +22,7 @@ require 'insert_by_url.php';
 $url_list = array();
 $file = plugin_dir_path(__FILE__) . 'log.txt';
 // each new request empty the log file
-file_put_contents($file, '');
+
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
     // this action is used to trigger synchronization of previous articles
@@ -98,6 +98,8 @@ function ws_process_request(){
     // if no post data, return 
     $sync_history = isset($_REQUEST['ws_history']) ? true : false;
     if($sync_history){
+        global $file;    
+        file_put_contents($file, '');        
         $urls_str = $_REQUEST['given_urls'];
         if($urls_str != ''){
             global $url_list;
