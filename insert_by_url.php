@@ -211,6 +211,7 @@ function ws_insert_by_url($urls) {
 					'tmp_name' => $tmpFile
 				);
 				$id = @media_handle_sideload($fileArr, $postId);
+                file_put_contents($file, "add new feature image id to db:" . $id . "\n", FILE_APPEND);
 				if (!is_wp_error($id)) {
 					@set_post_thumbnail($postId, $id);
 				}
