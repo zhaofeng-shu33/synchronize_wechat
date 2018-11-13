@@ -286,7 +286,7 @@ function ws_downloadImage($postId, $dom) {
       $userName = $userName->plaintext;
      }
      else{ // handle 转载
-         $userName = $dom->find('#original_account_nickname', 0)->plaintext;
+         $userName = $dom->find('.original_account_nickname', 0)->plaintext;
      }
 	$userName = esc_html($userName);
 	// 保留来源
