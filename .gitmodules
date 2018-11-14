@@ -1,3 +1,6 @@
 [submodule "wechat-php-sdk"]
 	path = wechat-php-sdk
 	url = https://github.com/gaoming13/wechat-php-sdk
+[submodule "php-simple-html-dom"]
+	path = php-simple-html-dom
+	url = https://github.com/demonkoryu/php-simple-html-dom.git
