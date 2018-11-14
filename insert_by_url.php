@@ -296,6 +296,7 @@ function ws_downloadImage($postId, $dom) {
          $userName = $dom->find('.original_account_nickname', 0)->plaintext;
      }
 	$userName = esc_html($userName);
+    file_put_contents($file, "article user name:" . $userName . "\n", FILE_APPEND);
 	// 保留来源
 	$keepSource     = isset($_REQUEST['keep_source']) && $_REQUEST['keep_source'] == 'keep';
 	$content = $dom->find('#js_content', 0)->innertext;
@@ -310,10 +311,9 @@ function ws_downloadImage($postId, $dom) {
 				"</blockquote>";
 		$content .= $source;
 	}
-	$content = '<div class="bpp-post-content">'.$content.'</div>';
 	// 保留文章样式
 	$content = trim($content);
-	@wp_update_post(array(
+	wp_update_post(array(
 		'ID' => $postId,
 		'post_content' =>  $content
 	));
