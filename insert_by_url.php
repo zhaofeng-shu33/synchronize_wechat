@@ -3,6 +3,9 @@ if(!class_exists('simple_html_dom_node')){
 	require_once("php-simple-html-dom/simple_html_dom.php");
 }
 function ws_insert_by_url($urls) {
+    if ( ! is_admin() ) {
+        return;
+    }
 	global $wpdb;
 	//添加下载图片地址到本地功能
 	$schedule       = isset($_REQUEST['schedule']) && intval($_REQUEST['schedule']) == 1;
