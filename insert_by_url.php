@@ -3,8 +3,8 @@ if(!class_exists('simple_html_dom_node')){
 	require_once("php-simple-html-dom/simple_html_dom.php");
 }
 function ws_insert_by_url($urls) {
-    if ( ! is_admin() ) {
-        return;
+    if ( is_admin() ) {
+        require_once(ABSPATH . 'wp-admin/includes/admin.php');
     }
 	global $wpdb;
 	//添加下载图片地址到本地功能
@@ -210,7 +210,7 @@ function ws_insert_by_url($urls) {
 			$coverImageSrc = $redirectUrl . $matches[2];
 			$tmpFile = download_url($coverImageSrc);
 			if (is_string($tmpFile)) {
-				$prefixName = get_option('bp_image_name_prefix', 'beepress-weixin-zhihu-jianshu-plugin');
+				$prefixName = get_option('ws_image_name_prefix', 'ws-plugin');
 				$fileName = $prefixName . '-' . time() . '.jpeg';
 				$fileArr  = array(
 					'name'     => $fileName,
