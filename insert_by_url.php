@@ -238,6 +238,7 @@ function ws_downloadImage($postId, $dom) {
 	// 文章标题
 	$title             = $_REQUEST['post_title'];
 	$centeredImage     = get_option('bp_image_centered', 'no') == 'yes';
+    global $file;
 	foreach ($images as $image) {
 		$src  = $image->getAttribute('src');
 		$type = $image->getAttribute('data-type');
@@ -261,7 +262,7 @@ function ws_downloadImage($postId, $dom) {
 		} else {
 			$fileName = 'ws-plugin-' . $version . '-' . $postId . '-' . time() .'.' . $type;
 		}
-        $id = post_exists($title);
+        $id = post_exists($fileName);
         if($id==0){
     		$tmpFile = download_url($src);
 
@@ -313,6 +314,7 @@ function ws_downloadImage($postId, $dom) {
 	}
 	// 保留文章样式
 	$content = trim($content);
+    file_put_contents($file, $content . "\n", FILE_APPEND);
 	wp_update_post(array(
 		'ID' => $postId,
 		'post_content' =>  $content
