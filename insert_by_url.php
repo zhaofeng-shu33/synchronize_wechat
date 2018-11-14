@@ -257,12 +257,11 @@ function ws_downloadImage($postId, $dom) {
 		if (!$type || $type == 'other') {
 			$type = 'jpeg';
 		}
-		if ($schedule) {
-			$fileName = 'ws-schedule-' . $version . '-' . $postId . '-' . time() .'.' . $type;
-		} else {
-			$fileName = 'ws-plugin-' . $version . '-' . $postId . '-' . time() .'.' . $type;
-		}
-        $id = post_exists($fileName);
+        file_put_contents($file, 'pic src: ' . $src . "\n", FILE_APPEND);
+        $pic_array = explode("/",$src);
+        $pic_name =  $pic_array[count($pic_array)-2];		
+		$fileName = 'ws-plugin-' . $pic_name . '.' . $type;		
+        $id = post_exists($fileName) ;
         if($id==0){
     		$tmpFile = download_url($src);
 
@@ -315,9 +314,14 @@ function ws_downloadImage($postId, $dom) {
 	// 保留文章样式
 	$content = trim($content);
     file_put_contents($file, $content . "\n", FILE_APPEND);
-	wp_update_post(array(
+	$return_postID = wp_update_post(array(
 		'ID' => $postId,
 		'post_content' =>  $content
 	));
+    if(is_wp_error($return_postID)){
+        file_put_contents($file, 'Error message' . $return_postID->get_error_message() . "\n", FILE_APPEND);
+    }
+    file_put_contents($file, 'update POST ID' .$postId . "\n", FILE_APPEND);
+    
 }
 ?>
