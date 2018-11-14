@@ -99,11 +99,11 @@ function ws_process_request(){
     $sync_history = isset($_REQUEST['ws_history']) ? true : false;
     if($sync_history){
         global $file;    
-        file_put_contents($file, '');        
         $urls_str = $_REQUEST['given_urls'];
         if($urls_str != ''){
             global $url_list;
             $url_list = explode("\n", $urls_str);
+            // file_put_contents($file, '');                    
             ws_insert_by_url($url_list);
         }
         else{
