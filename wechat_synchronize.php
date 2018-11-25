@@ -91,7 +91,7 @@ function ws_get_history_url(){
         }
         $offset += 20;
     }
-    ws_insert_by_url($url_list);
+    ws_insert_by_urls($url_list);
 }
 
 function ws_process_request(){
@@ -104,7 +104,7 @@ function ws_process_request(){
             global $url_list;
             $url_list = explode("\n", $urls_str);
             // file_put_contents($file, '');                    
-            ws_insert_by_url($url_list);
+            ws_insert_by_urls($url_list);
         }
         else{
             ws_get_history_url();

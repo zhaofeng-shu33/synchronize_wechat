@@ -2,113 +2,83 @@
 if(!class_exists('simple_html_dom_node')){
 	require_once("php-simple-html-dom/simple_html_dom.php");
 }
-function ws_insert_by_url($urls) {
-    if ( is_admin() ) {
-        require_once(ABSPATH . 'wp-admin/includes/admin.php');
+//! \brief: check the domain name
+//! input: $url
+//! output: trimed $url if $url contains the domain name of wx; otherwise, empty string is returned
+function check_wx_url($url){
+    if (strpos($url, 'http://mp.weixin.qq.com/s') !== false || strpos($url, 'https://mp.weixin.qq.com/s') !== false) {
+        $url = str_replace('http://', 'https://', $url);
+	    return trim($url);
     }
-	global $wpdb;
-	//添加下载图片地址到本地功能
-	$schedule       = isset($_REQUEST['schedule']) && intval($_REQUEST['schedule']) == 1;
-	$sprindboard    = isset($_REQUEST['springboard']) ?
-						$_REQUEST['springboard'] :
-						'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
-	// 微信原作者
-	$changeAuthor   = false;
-	// 改变发布时间
-	$changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
-	// 默认是直接发布
-	$postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
-						$_REQUEST['post_status'] : 'publish';
-	// 保留文章样式
-	$keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
-	// 文章分类，默认是未分类（1）
-	$postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
-	$postCate       = array($postCate);
-	// 文章类型，默认是post
-	$postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
-    //	$debug          = isset($_REQUEST['debug']) ? $_REQUEST['debug'] : false;
-	$force          = isset($_REQUEST['force']) ? $_REQUEST['force'] : true;
+    else
+        return '';
+}
+//! \brief: get the html from url
+//! input: $url
+//! output: $html raw text, if any error occurs, return empty string
+function get_html($url){
+    if (function_exists('file_get_contents')) {
+	    $html = @file_get_contents($url);
+    } 
+    if ($html == '') { //fallback to use curl module for https request
+	    $ch = curl_init();
+	    $timeout = 30;
+	    curl_setopt($ch, CURLOPT_URL, $url);
+	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	    $html = curl_exec($ch);
+	    curl_close($ch);
+    }
+    return $html;
+}
+/**
+* intro: this function insert wechat article to the wp-database
+* this function relies on global variable $wpdb and the php module $curl
+* input:
+* $config = {
+* 		'changeAuthor'[bool,default:false]:whether to keep the original author
+*		'changePostTime'[bool,default:false]: whether to keep the original post time
+*		'postStatus'[choice,default:draft]: article status
+*       'postType'[choice,default:post]: article type
+*		'keepStyle'[bool,default:false]: whether the css of the article is kept
+*		'postCate'[choice,default:not_classcified]: the classification to put the article
+*        'downloadImage'[bool,default:false]: whether download image and save a local copy
+*    }
+* returns: 
+* status = {
+*     'post_id'[int]: if post_id = 0, error occurs
+*     'err_msg'[str]: if no error, empty str      
+*   }
+*/
 
-	$postId         = null;
-	$urls           = str_replace('https', 'http', $urls);
-    global $file;
-	foreach ($urls as $url) {
-		if (strpos($url, 'http://mp.weixin.qq.com/s') !== false || strpos($url, 'https://mp.weixin.qq.com/s') !== false) {
-			$url =  trim($url);
-		}
+function ws_insert_by_url($url, $config){
+	    $url =  check_wx_url($url);
 		if (!$url) {
-			continue;
+			return array('post_id' => 0, 'err_msg' => 'url does not contain mp.weixin.qq.com');
 		}
-		if (function_exists('file_get_contents')) {
-            // file_put_contents($file, "function_exists: file_get_contents" . "\n", FILE_APPEND);
-			$html = @file_get_contents($url);
-		} else {
-			$GLOBALS['errMsg'][] = '不支持file_get_contents';
-			break;
-		}
-		if ($html == '') {
-            $url = str_replace('http://', 'https://', $url);
-            file_put_contents($file, "URL: " . $url . "\n", FILE_APPEND);
-			$ch = curl_init();
-			$timeout = 30;
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-			$html = curl_exec($ch);
-			curl_close($ch);
-		}
+        !$html = get_html($url);
 		if (!$html) {
-			$GLOBALS['errMsg'][] = array(
-				'url' => $url,
-				'msg' => '无法获取此条URL内容'
-			);
-			continue;
+            return array('post_id' => 0, 'err_msg' => 'cannot get any message from '. $url);
 		}
 		// 是否移除原文样式
+        $keepStyle = isset($config['keep_style']) && $config['keep_style'] == true;
 		if (!$keepStyle) {
 			$html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
 		}
-		$dom  = str_get_html($html);
 		// 文章标题
 		preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
-		$_REQUEST['post_title'] = trim($matches[2]);
-		$title = $_REQUEST['post_title'];
-        
-        file_put_contents($file, "Title:" . $title . "\n", FILE_APPEND);
-		// 确保有标题
+		$title = trim($matches[2]);
+        // 确保有标题
 		if (!$title) {
-			$GLOBALS['errMsg'][] = array(
-				'url' => $url,
-				'msg' => '此条URL没有文章标题'
-			);
-			continue;
+			return array('post_id' => 0, 'err_msg' => 'cannot get title from '. $url);
 		}
 		// 同步任务检查标题是否重复，若重复则跳过
-        file_put_contents($file, "post id :" . post_exists($title) . "\n", FILE_APPEND);
-		if (post_exists($title) != 0) {
-			$GLOBALS['errMsg'][] = array(
-				'url' => $url,
-				'msg' => '标题重复'
-			);
-			continue;
+        $post_id = post_exists($title);
+		if ($post_id != 0) {
+			return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
 		}
-		// 处理图片及视频资源
-		$imageDoms = $dom->find('img');
-		$videoDoms = $dom->find('.video_iframe');
-		foreach ($imageDoms as $imageDom) {
-			$dataSrc = $imageDom->getAttribute('data-src');
-			if (!$dataSrc) {
-				continue;
-			}
-			$src  = $sprindboard . $dataSrc;
-			$imageDom->setAttribute('src', $src);
-		}
-		foreach ($videoDoms as $videoDom) {
-			$dataSrc = $videoDom->getAttribute('data-src');
-			// 视频不用跳板
-			$videoDom->setAttribute('src', $dataSrc);
-		}
+
 		// 发布日期
 		if ($changePostTime) {
 			$postDate = date('Y-m-d H:i:s', current_time('timestamp'));
@@ -173,21 +143,19 @@ function ws_insert_by_url($urls) {
 			// 默认博客作者
 			$userId = get_current_user_id();
 		}
-
-		if ($schedule) {
-			$userId = 1;
-			if ($cates) {
-				$cateIds = array();
-				foreach ($cates as $cate) {
-					$term = get_term_by('name', $cate, 'category');
-					if ($term) {
-						$cateIds[] = $term->term_id;
-					} else {
-					}
+			
+		if ($cates) {
+			$cateIds = array();
+			foreach ($cates as $cate) {
+				$term = get_term_by('name', $cate, 'category');
+				if ($term) {
+					$cateIds[] = $term->term_id;
+				} else {
 				}
-				$postCate = $cateIds;
 			}
+			$postCate = $cateIds;
 		}
+
 
 
 		$post = array(
@@ -200,6 +168,7 @@ function ws_insert_by_url($urls) {
 			'post_category' => $postCate,
 			'post_type'	    => $postType
 		);
+        $postId         = null;
 		$postId = @wp_insert_post($post);
         file_put_contents($file, "add new post id to db:" . $postId . "\n", FILE_APPEND);
 		// 公众号设置featured image
@@ -224,8 +193,62 @@ function ws_insert_by_url($urls) {
 			}
 		}
 		unset($html);
+		// 处理图片及视频资源
+        $dom  = str_get_html($html);
+		$imageDoms = $dom->find('img');
+		$videoDoms = $dom->find('.video_iframe');
+        $sprindboard = 'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
+		foreach ($imageDoms as $imageDom) {
+			$dataSrc = $imageDom->getAttribute('data-src');
+			if (!$dataSrc) {
+				continue;
+			}
+			$src  = $sprindboard . $dataSrc;
+			$imageDom->setAttribute('src', $src);
+		}
+		foreach ($videoDoms as $videoDom) {
+			$dataSrc = $videoDom->getAttribute('data-src');
+			// 视频不用跳板
+			$videoDom->setAttribute('src', $dataSrc);
+		}
 		// 下载图片到本地
 		ws_downloadImage($postId, $dom);
+}
+function ws_insert_by_urls($urls) {
+    if ( is_admin() ) {
+        require_once(ABSPATH . 'wp-admin/includes/admin.php');
+    }
+	global $wpdb;
+
+	// 微信原作者
+	$changeAuthor   = false;
+	// 改变发布时间
+	$changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
+	// 默认是直接发布
+	$postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
+						$_REQUEST['post_status'] : 'publish';
+	// 保留文章样式
+	$keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
+	// 文章分类，默认是未分类（1）
+	$postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
+	$postCate       = array($postCate);
+	// 文章类型，默认是post
+	$postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
+
+	
+	$urls           = str_replace('https', 'http', $urls);
+    global $file;
+    $config = array(
+		'changeAuthor'    => $changeAuthor,
+		'changePostTime'  => $changePostTime,
+		'postStatus'   => $postStatus,
+        'postType' => $postType,
+		'keepStyle'     => $keepStyle,
+		'postCate' => $postCate,
+        'downloadImage' => true
+	);
+	foreach ($urls as $url) {
+        ws_insert_by_url($url, $config);
 	}
 	$GLOBALS['done'] = true;
 	return $postId;
@@ -233,7 +256,6 @@ function ws_insert_by_url($urls) {
 function ws_downloadImage($postId, $dom) {
 	// 提取图片
 	$images            = $dom->find('img');
-	$schedule          = isset($_REQUEST['schedule']) && intval($_REQUEST['schedule']) == 1;
 	$version           = '2-4-2';
 	// 文章标题
 	$title             = $_REQUEST['post_title'];
