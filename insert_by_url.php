@@ -30,7 +30,39 @@ function get_html($url){
 	    $html = curl_exec($ch);
 	    curl_close($ch);
     }
+    if(strpos($html,'å‚æ•°é”™è¯¯')!== 0){
+        return '';
+    }    
     return $html;
+}
+//! \brief: create new user and add its role as contributor
+//! input: name and password for the new user
+//! output: newly created user id
+function create_new_user($name, $pwd){
+    $userId   = wp_create_user($name, $pwd);
+    // ç”¨æˆ·å·²å­˜åœ¨
+    if($userId){
+        if ($userId->get_error_code() == 'existing_user_login') {
+            $userData = get_user_by('login', $bizVal);
+        } else if(is_integer($userId) > 0) {
+            $userData = get_userdata($userId);
+        } else {
+            // é”™è¯¯æƒ…å†µ, return invalid user_id
+            return 0;
+        }
+        // é»˜è®¤æ˜¯æŠ•ç¨¿è€…
+        $userData->add_role('contributor');
+        $userData->remove_role('subscriber');
+        $userData->display_name = $userName;
+        $userData->nickname     = $userName;
+        $userData->first_name   = $userName;
+        wp_update_user($userData);
+        $userId = $userData->ID;
+    } else {
+        // é»˜è®¤åšå®¢ä½œè€…
+        $userId = get_current_user_id();
+    }
+    return $userId;
 }
 /**
 * intro: this function insert wechat article to the wp-database
@@ -61,25 +93,26 @@ function ws_insert_by_url($url, $config){
 		if (!$html) {
             return array('post_id' => 0, 'err_msg' => 'cannot get any message from '. $url);
 		}
-		// ÊÇ·ñÒÆ³ıÔ­ÎÄÑùÊ½
-        $keepStyle = isset($config['keep_style']) && $config['keep_style'] == true;
+		// æ˜¯å¦ç§»é™¤åŸæ–‡æ ·å¼
+        $keepStyle = isset($config['keep_style']) && $config['keep_style'];
 		if (!$keepStyle) {
 			$html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
 		}
-		// ÎÄÕÂ±êÌâ
+		// æ–‡ç« æ ‡é¢˜
 		preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
 		$title = trim($matches[2]);
-        // È·±£ÓĞ±êÌâ
+        // ç¡®ä¿æœ‰æ ‡é¢˜
 		if (!$title) {
 			return array('post_id' => 0, 'err_msg' => 'cannot get title from '. $url);
 		}
-		// Í¬²½ÈÎÎñ¼ì²é±êÌâÊÇ·ñÖØ¸´£¬ÈôÖØ¸´ÔòÌø¹ı
+		// åŒæ­¥ä»»åŠ¡æ£€æŸ¥æ ‡é¢˜æ˜¯å¦é‡å¤ï¼Œè‹¥é‡å¤åˆ™è·³è¿‡
         $post_id = post_exists($title);
 		if ($post_id != 0) {
 			return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
 		}
 
-		// ·¢²¼ÈÕÆÚ
+		// å‘å¸ƒæ—¥æœŸ
+        $changePostTime = isset($config['changePostTime']) && $config['changePostTime'];
 		if ($changePostTime) {
 			$postDate = date('Y-m-d H:i:s', current_time('timestamp'));
 		} else {
@@ -87,63 +120,22 @@ function ws_insert_by_url($url, $config){
 			$postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
 			$postDate = date('Y-m-d H:i:s', strtotime($postDate));
 		}
-		// ÌáÈ¡ÓÃ»§ĞÅÏ¢
-		$url      = parse_url($url);
-		$query    = isset($url['query']) ? $url['query'] : '';
-		$queryArr = explode('&', $query);
-		$bizVal   = '';
-		$cates = array();
-		foreach ($queryArr as $item) {
-			if (!$item) {
-				continue;
-			}
-			list($key, $val) = explode('=', $item, 3);
-			if ($key == '__biz') {
-				//  ÓÃ»§Î¨Ò»±êÊ¶
-				$bizVal = $val;
-			}
-			if ($key == 'cates') {
-				$cates = explode(',', $val);
-			}
-		}
-		// Èç¹ûÁ´½ÓÖĞ²»º¬ÓĞbiz²ÎÊı£¬ÔòÑ¡Ôñµ±Ç°µÄÊ±¼ä´Á×÷ÎªÓÃ»§ÃûºÍÃÜÂë
-		if ($bizVal == '') {
-			$bizVal = time();
-		}
 
-		// ÊÇ·ñ¸Ä±ä×÷Õß£¬Ä¬ÈÏÊÇµ±Ç°µÇÂ¼×÷Õß
-		// $userName = $dom->find('#post-user', 0)->plaintext;
-		// $userName = esc_html($userName);
-		if ($changeAuthor) {
-			// ´´½¨ÓÃ»§
-			$userId   = wp_create_user($bizVal, $bizVal);
-			// ÓÃ»§ÒÑ´æÔÚ
-			if ($userId) {
-				if ($userId->get_error_code() == 'existing_user_login') {
-					$userData = get_user_by('login', $bizVal);
-				} else if(is_integer($userId) > 0) {
-					$userData = get_userdata($userId);
-				} else {
-					// ´íÎóÇé¿ö
-					continue;
-				}
-				// Ä¬ÈÏÊÇÍ¶¸åÕß
-				$userData->add_role('contributor');
-				$userData->remove_role('subscriber');
-				$userData->display_name = $userName;
-				$userData->nickname     = $userName;
-				$userData->first_name   = $userName;
-				wp_update_user($userData);
-				$userId = $userData->ID;
-			} else {
-				// Ä¬ÈÏ²©¿Í×÷Õß
-				$userId = get_current_user_id();
-			}
+		// æ˜¯å¦æ”¹å˜ä½œè€…ï¼Œå¦‚æ”¹å˜åˆ™æ–°å»ºï¼Œä¸æ”¹å˜åˆ™é»˜è®¤æ˜¯å½“å‰ç™»å½•ä½œè€…
+        $changeAuthor   = isset($config['changeAuthor']) && $config['changeAuthor'];
+		if ($changeAuthor){
+			// åˆ›å»ºç”¨æˆ·
+            $userName = $dom->find('#post-user', 0)->plaintext;
+            $userName = esc_html($userName);
+            $userId = create_new_user($userName, crc32($userName));   
+            if(!$userId){
+                return array('post_id' => 0, 'err_msg' => 'error occurs when create new user with userName = ' . $userName);
+            }
 		} else {
-			// Ä¬ÈÏ²©¿Í×÷Õß
+			// é»˜è®¤åšå®¢ä½œè€…
 			$userId = get_current_user_id();
 		}
-			
+		$cates = isset($config['postCate'])? $config['postCate'] : ''; 	
 		if ($cates) {
 			$cateIds = array();
 			foreach ($cates as $cate) {
@@ -156,11 +148,9 @@ function ws_insert_by_url($url, $config){
 			$postCate = $cateIds;
 		}
 
-
-
 		$post = array(
 			'post_title'    => $title,
-			'post_content'  => "",
+			'post_content'  => $url,
 			'post_status'   => $postStatus,
 			'post_date'     => $postDate,
 			'post_modified' => $postDate,
@@ -170,8 +160,14 @@ function ws_insert_by_url($url, $config){
 		);
         $postId         = null;
 		$postId = @wp_insert_post($post);
-        file_put_contents($file, "add new post id to db:" . $postId . "\n", FILE_APPEND);
-		// ¹«ÖÚºÅÉèÖÃfeatured image
+        return set_image($html, $postId);
+
+}
+//! \brief: extract image urls from html, and download it to local file system, update image url in postId->postContent
+//! input: $html:raw html text, $postId: post Id
+//! output: status = {'post_id':$postId, 'err_msg':$err_msg}
+function set_image($html, $postId){
+    		// å…¬ä¼—å·è®¾ç½®featured image
 		$setFeaturedImage  = get_option('bp_featured_image', 'yes') == 'yes';
 		if ($setFeaturedImage) {
 			preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
@@ -193,7 +189,7 @@ function ws_insert_by_url($url, $config){
 			}
 		}
 		unset($html);
-		// ´¦ÀíÍ¼Æ¬¼°ÊÓÆµ×ÊÔ´
+		// å¤„ç†å›¾ç‰‡åŠè§†é¢‘èµ„æº
         $dom  = str_get_html($html);
 		$imageDoms = $dom->find('img');
 		$videoDoms = $dom->find('.video_iframe');
@@ -208,10 +204,10 @@ function ws_insert_by_url($url, $config){
 		}
 		foreach ($videoDoms as $videoDom) {
 			$dataSrc = $videoDom->getAttribute('data-src');
-			// ÊÓÆµ²»ÓÃÌø°å
+			// è§†é¢‘ä¸ç”¨è·³æ¿
 			$videoDom->setAttribute('src', $dataSrc);
 		}
-		// ÏÂÔØÍ¼Æ¬µ½±¾µØ
+		// ä¸‹è½½å›¾ç‰‡åˆ°æœ¬åœ°
 		ws_downloadImage($postId, $dom);
 }
 function ws_insert_by_urls($urls) {
@@ -220,19 +216,19 @@ function ws_insert_by_urls($urls) {
     }
 	global $wpdb;
 
-	// Î¢ĞÅÔ­×÷Õß
+	// å¾®ä¿¡åŸä½œè€…
 	$changeAuthor   = false;
-	// ¸Ä±ä·¢²¼Ê±¼ä
+	// æ”¹å˜å‘å¸ƒæ—¶é—´
 	$changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
-	// Ä¬ÈÏÊÇÖ±½Ó·¢²¼
+	// é»˜è®¤æ˜¯ç›´æ¥å‘å¸ƒ
 	$postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
 						$_REQUEST['post_status'] : 'publish';
-	// ±£ÁôÎÄÕÂÑùÊ½
+	// ä¿ç•™æ–‡ç« æ ·å¼
 	$keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
-	// ÎÄÕÂ·ÖÀà£¬Ä¬ÈÏÊÇÎ´·ÖÀà£¨1£©
+	// æ–‡ç« åˆ†ç±»ï¼Œé»˜è®¤æ˜¯æœªåˆ†ç±»ï¼ˆ1ï¼‰
 	$postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
 	$postCate       = array($postCate);
-	// ÎÄÕÂÀàĞÍ£¬Ä¬ÈÏÊÇpost
+	// æ–‡ç« ç±»å‹ï¼Œé»˜è®¤æ˜¯post
 	$postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
 
 	
@@ -254,10 +250,10 @@ function ws_insert_by_urls($urls) {
 	return $postId;
 }
 function ws_downloadImage($postId, $dom) {
-	// ÌáÈ¡Í¼Æ¬
+	// æå–å›¾ç‰‡
 	$images            = $dom->find('img');
 	$version           = '2-4-2';
-	// ÎÄÕÂ±êÌâ
+	// æ–‡ç« æ ‡é¢˜
 	$title             = $_REQUEST['post_title'];
 	$centeredImage     = get_option('bp_image_centered', 'no') == 'yes';
     global $file;
@@ -314,12 +310,12 @@ function ws_downloadImage($postId, $dom) {
      if($userName){
       $userName = $userName->plaintext;
      }
-     else{ // handle ×ªÔØ
+     else{ // handle è½¬è½½
          $userName = $dom->find('.original_account_nickname', 0)->plaintext;
      }
 	$userName = esc_html($userName);
     file_put_contents($file, "article user name:" . $userName . "\n", FILE_APPEND);
-	// ±£ÁôÀ´Ô´
+	// ä¿ç•™æ¥æº
 	$keepSource     = isset($_REQUEST['keep_source']) && $_REQUEST['keep_source'] == 'keep';
 	$content = $dom->find('#js_content', 0)->innertext;
 	$content = preg_replace('/data\-([a-zA-Z0-9\-])+\=\"[^\"]*\"/', '', $content);
@@ -329,11 +325,11 @@ function ws_downloadImage($postId, $dom) {
 	if ($keepSource) {
 		$source =
 				"<blockquote class='keep-source'>" .
-				"<p>Ê¼·¢ÓÚÎ¢ĞÅ¹«ÖÚºÅ£º{$userName}</p>" .
+				"<p>å§‹å‘äºå¾®ä¿¡å…¬ä¼—å·ï¼š{$userName}</p>" .
 				"</blockquote>";
 		$content .= $source;
 	}
-	// ±£ÁôÎÄÕÂÑùÊ½
+	// ä¿ç•™æ–‡ç« æ ·å¼
 	$content = trim($content);
     file_put_contents($file, $content . "\n", FILE_APPEND);
 	$return_postID = wp_update_post(array(
