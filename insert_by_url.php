@@ -16,13 +16,12 @@ function check_wx_url($url){
 //! \brief: get the html from url
 //! input: $url
 //! output: $html raw text, if any error occurs, return empty string
-function get_html($url){
+function get_html($url, $timeout = 30){
     if (function_exists('file_get_contents')) {
 	    $html = @file_get_contents($url);
     } 
     if ($html == '') { //fallback to use curl module for https request
 	    $ch = curl_init();
-	    $timeout = 30;
 	    curl_setopt($ch, CURLOPT_URL, $url);
 	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 	    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
@@ -38,6 +37,7 @@ function get_html($url){
 //! \brief: create new user and add its role as contributor
 //! input: name and password for the new user
 //! output: newly created user id
+//! status: not tested
 function create_new_user($name, $pwd){
     $userId   = wp_create_user($name, $pwd);
     // 用户已存在
