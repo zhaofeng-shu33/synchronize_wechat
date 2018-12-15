@@ -83,16 +83,19 @@ function create_new_user($name, $pwd){
 *     'err_msg'[str]: if no error, empty str      
 *   }
 */
-
-function ws_insert_by_url($url, $config){
-	    $url =  check_wx_url($url);
+function ws_insert_by_url($url, $config = Null){
+	    $url = check_wx_url($url);
 		if (!$url) {
-			return array('post_id' => 0, 'err_msg' => 'url does not contain mp.weixin.qq.com');
+			return array('post_id' => -1, 'err_msg' => 'url does not contain mp.weixin.qq.com');
 		}
         !$html = get_html($url);
 		if (!$html) {
-            return array('post_id' => 0, 'err_msg' => 'cannot get any message from '. $url);
+            return array('post_id' => -2, 'err_msg' => 'cannot get any message from '. $url);
 		}
+        return ws_insert_by_html($html, $config);
+}
+
+function ws_insert_by_html($html, $config = Null){
 		// 是否移除原文样式
         $keepStyle = isset($config['keep_style']) && $config['keep_style'];
 		if (!$keepStyle) {
@@ -103,7 +106,7 @@ function ws_insert_by_url($url, $config){
 		$title = trim($matches[2]);
         // 确保有标题
 		if (!$title) {
-			return array('post_id' => 0, 'err_msg' => 'cannot get title from '. $url);
+			return array('post_id' => -3, 'err_msg' => 'cannot get title from '. $url);
 		}
 		// 同步任务检查标题是否重复，若重复则跳过
         $post_id = post_exists($title);
