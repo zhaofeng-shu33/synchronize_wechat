@@ -103,15 +103,15 @@ function ws_insert_by_html($html, $config = Null){
 		}
 		// 文章标题
 		preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
-		$title = trim($matches[2]);
         // 确保有标题
-		if (!$title) {
-			return array('post_id' => -3, 'err_msg' => 'cannot get title from '. $url);
+		if (count($matches)==0) {
+			return array('post_id' => -3, 'err_msg' => 'cannot get title from html');
 		}
+		$title = trim($matches[2]);
 		// 同步任务检查标题是否重复，若重复则跳过
         $post_id = post_exists($title);
 		if ($post_id != 0) {
-			return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
+			return array('post_id' => -4, 'err_msg' => 'the article is already in the database');
 		}
 
 		// 发布日期
@@ -123,6 +123,12 @@ function ws_insert_by_html($html, $config = Null){
 			$postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
 			$postDate = date('Y-m-d H:i:s', strtotime($postDate));
 		}
+    	// 默认是存为草稿
+	    $postStatus = isset($config['postStatus']) && in_array($config['postStatus'], array('publish', 'pending', 'draft')) ?
+					$config['postStatus'] : 'draft';
+
+	    // 文章类型，默认是post
+	    $postType       = isset($config['postType']) ? $config['postType'] : 'post';
 
 		// 是否改变作者，如改变则新建，不改变则默认是当前登录作者
         $changeAuthor   = isset($config['changeAuthor']) && $config['changeAuthor'];
@@ -138,6 +144,7 @@ function ws_insert_by_html($html, $config = Null){
 			// 默认博客作者
 			$userId = get_current_user_id();
 		}
+	    // 文章分类，默认是未分类（1）
 		$cates = isset($config['postCate'])? $config['postCate'] : ''; 	
 		if ($cates) {
 			$cateIds = array();
@@ -150,10 +157,13 @@ function ws_insert_by_html($html, $config = Null){
 			}
 			$postCate = $cateIds;
 		}
+        else{
+	        $postCate       = array(1);        
+        }
 
 		$post = array(
 			'post_title'    => $title,
-			'post_content'  => $url,
+			'post_content'  => '',
 			'post_status'   => $postStatus,
 			'post_date'     => $postDate,
 			'post_modified' => $postDate,
@@ -163,35 +173,81 @@ function ws_insert_by_html($html, $config = Null){
 		);
         $postId         = null;
 		$postId = @wp_insert_post($post);
-        return set_image($html, $postId);
+        return array('post_id' => $postId, 'err_msg' => '');
+        // return ws_set_image($html, $postId);
 
+}
+
+//! \brief: get all attached image for $postId and check whether image_name is within it
+//! input: $postId: post Id
+//!        $image_name: image_name to be checked
+//! output: status = {'post_id':$postId, 'err_msg':$err_msg}, if the image exists, set $postId = image attachment id, otherwise set postId=0
+function ws_check_image_exists($postId, $image_name){
+    $media_array = get_attached_media('image', $postId);
+	foreach ($media_array as $media_object) {
+        $attached_image_id = $media_object->ID;
+        $relative_file_path = wp_get_attachment_metadata($attached_image_id)['file'];
+        if(basename($relative_file_path) == $image_name){
+            return array('post_id' => $attached_image_id, 'err_msg' => 'image already exists');
+        }
+	}
+    return array('post_id' => 0, 'err_msg' => '');
+}
+//! \brief: download image from $url and update it for the post with id = $postId
+//! input: $url: wechat image original url
+//!        $postId: post Id
+//! output: status = {'post_id':$postId, 'err_msg':$err_msg}
+function ws_upload_image($url, $postId, $image_name = Null){
+	$redirectUrl = 'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
+	$coverImageSrc = $redirectUrl . $url;
+    if($image_name != Null){
+        $return_array = ws_check_image_exists($postId, $image_name);
+        if($return_array['post_id'] > 0)
+            return $return_array;
+    }
+	$tmpFile = download_url($coverImageSrc);
+	if (is_string($tmpFile)) {
+        if($image_name){
+            $fileName = $image_name;
+        }
+        else{
+		    $prefixName = get_option('ws_image_name_prefix', 'ws-plugin');
+		    $fileName = $prefixName . '-' . time() . '.jpeg';
+        }
+		$fileArr  = array(
+			'name'     => $fileName,
+			'tmp_name' => $tmpFile
+		);
+        $return_array = ws_check_image_exists($postId, $fileName);
+        if($return_array['post_id'] == 0){
+		    $return_obj = @media_handle_sideload($fileArr, $postId);
+		    if (!is_wp_error($return_obj)) { // upload sucessfully
+                 return array('post_id' => $return_obj, 'err_msg' => 'upload successfully');
+			    // @set_post_thumbnail($postId, $id);
+		    }
+            else{ // upload failed, $return_obj is instance of WP_Error
+                return array('post_id' => -6, 'err_msg' => $return_obj->get_error_code());
+            }
+        }
+        else{ // image already exists
+            @unlink(tmpFile);
+            return $return_array;
+        }
+	}
+    else{
+        return array('post_id' => -5, 'err_msg' => 'download feature image failed');
+    }
 }
 //! \brief: extract image urls from html, and download it to local file system, update image url in postId->postContent
 //! input: $html:raw html text, $postId: post Id
 //! output: status = {'post_id':$postId, 'err_msg':$err_msg}
-function set_image($html, $postId){
-    		// 公众号设置featured image
-		$setFeaturedImage  = get_option('bp_featured_image', 'yes') == 'yes';
+function ws_set_image($html, $postId){
+    	// 公众号设置 featured image
+		$setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
 		if ($setFeaturedImage) {
 			preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
-			$redirectUrl = 'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
-			$coverImageSrc = $redirectUrl . $matches[2];
-			$tmpFile = download_url($coverImageSrc);
-			if (is_string($tmpFile)) {
-				$prefixName = get_option('ws_image_name_prefix', 'ws-plugin');
-				$fileName = $prefixName . '-' . time() . '.jpeg';
-				$fileArr  = array(
-					'name'     => $fileName,
-					'tmp_name' => $tmpFile
-				);
-				$id = @media_handle_sideload($fileArr, $postId);
-                file_put_contents($file, "add new feature image id to db:" . $id . "\n", FILE_APPEND);
-				if (!is_wp_error($id)) {
-					@set_post_thumbnail($postId, $id);
-				}
-			}
+            ws_upload_image($matches[2], $postId);
 		}
-		unset($html);
 		// 处理图片及视频资源
         $dom  = str_get_html($html);
 		$imageDoms = $dom->find('img');
@@ -211,7 +267,7 @@ function set_image($html, $postId){
 			$videoDom->setAttribute('src', $dataSrc);
 		}
 		// 下载图片到本地
-		ws_downloadImage($postId, $dom);
+		return ws_downloadImage($postId, $dom);
 }
 function ws_insert_by_urls($urls) {
     if ( is_admin() ) {
@@ -278,30 +334,12 @@ function ws_downloadImage($postId, $dom) {
 		if (!$type || $type == 'other') {
 			$type = 'jpeg';
 		}
-        file_put_contents($file, 'pic src: ' . $src . "\n", FILE_APPEND);
-        $pic_array = explode("/",$src);
-        $pic_name =  $pic_array[count($pic_array)-2];		
-		$fileName = 'ws-plugin-' . $pic_name . '.' . $type;		
-        $id = post_exists($fileName) ;
-        if($id==0){
-    		$tmpFile = download_url($src);
-
-		    $fileArr = array(
-			    'name' => $fileName,
-			    'tmp_name' => $tmpFile
-		    );
-    		$id = @media_handle_sideload($fileArr, $postId);
-            file_put_contents($file, "add new media to db, with id=" . $id . "\n", FILE_APPEND);
+        $return_array = ws_upload_image($src, $postId);
+    	$id = $return_array['post_id'];
+        if($id < 0){
+            return $return_array;    
         }
-		if (is_wp_error($id)) {
-			$GLOBALS['errMsg'][] = array(
-				'src'  => $src,
-				'file' => $fileArr,
-				'msg'  => $id
-			);
-			@unlink($tmpFile);
-			continue;
-		} else {
+        else {
 			$imageInfo = wp_get_attachment_image_src($id, 'full');
 			$src       = $imageInfo[0];
 			$image->setAttribute('src', $src);
