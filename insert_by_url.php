@@ -82,7 +82,7 @@ function ws_insert_by_url($url, $config = Null){
 		if (!$url) {
 			return array('post_id' => -1, 'err_msg' => 'url does not contain mp.weixin.qq.com');
 		}
-        !$html = get_html($url);
+        $html = get_html($url);
 		if (!$html) {
             return array('post_id' => -2, 'err_msg' => 'cannot get any message from '. $url);
 		}
@@ -240,7 +240,8 @@ function ws_set_image($html, $postId){
 		$setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
 		if ($setFeaturedImage) {
 			preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
-            ws_upload_image($matches[2], $postId);
+            $return_array = ws_upload_image($matches[2], $postId);
+            @set_post_thumbnail($postId, $return_array['post_id']);
 		}
 		// 处理图片及视频资源
         $dom  = str_get_html($html);

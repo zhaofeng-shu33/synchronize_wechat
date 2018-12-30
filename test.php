@@ -22,6 +22,12 @@ class WxUrlTest extends TestCase
         }
         return $html;
     }
+    private function get_image()
+    {
+        $msg_cdn_url = "http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg";
+
+        return ws_upload_image($msg_cdn_url, 1, 'mzxl_thu.jpeg');    
+    }
     /**
      * @group local
      */
@@ -67,31 +73,26 @@ class WxUrlTest extends TestCase
         $url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
 
         $return_array = ws_insert_by_url(str_replace('Yu','uY',$url)); 
-        $this->assertSame($return_array['post_id'], -2);
+        $this->assertSame($return_array['post_id'], -3);
     }
 
     /**
      * @group network
      */
-    public function test_ws_set_feature_image_false()
+    public function test_ws_upload_image_false()
     {
         $msg_cdn_url = "http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg";
         $msg_cdn_url_false = str_replace('kNe', 'eNk', $msg_cdn_url);
 
-        $return_array = ws_set_feature_image($msg_cdn_url_false, 1);
+        $return_array = ws_upload_image($msg_cdn_url_false, 1);
         $this->assertSame($return_array['post_id'], -5);
-
-        $return_array = ws_set_feature_image($msg_cdn_url, 1, 'mzxl_thu.jpeg');
-        $this->assertTrue($return_array['post_id'] > 0);
     }
     /**
      * @group local
      */
-    public function test_ws_set_feature_image_true()
+    public function test_ws_upload_image_true()
     {
-        $msg_cdn_url = "http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg";
-
-        $return_array = ws_set_feature_image($msg_cdn_url, 1, 'mzxl_thu.jpeg');
+        $return_array = self::get_image();
         $this->assertTrue($return_array['post_id'] > 0);
     }
 
@@ -100,9 +101,9 @@ class WxUrlTest extends TestCase
      */
     public function test_ws_check_image_exists()
     {
-        // setup the database should be done here
-        $return_array = ws_check_image_exists(1, 'Picture1.png');
-        $this->assertSame($return_array['post_id'], 9);
+        self::get_image();
+        $return_array = ws_check_image_exists(1, 'mzxl_thu.jpeg');
+        $this->assertTrue($return_array['post_id'] > 0);
 
         $return_array = ws_check_image_exists(1, 'Picture2.png');
         $this->assertSame($return_array['post_id'], 0);
