@@ -8,6 +8,9 @@ require_once(ABSPATH . 'wp-admin/includes/admin.php');
 require_once('insert_by_url.php');
 class WxUrlTest extends TestCase
 {
+    private $webpage_url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
+    private $image_url = 'http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg';
+    private $image_name = 'mzxl_thu.jpeg';
     private function get_html()
     {
         $html_file_name = 'teach.txt';
@@ -16,17 +19,14 @@ class WxUrlTest extends TestCase
         }
         else{
             //check for right output of function `get_html`
-            $url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
-            $html = get_html($url);
+            $html = get_html($this->webpage_url);
             file_put_contents($html_file_name, $html);
         }
         return $html;
     }
     private function get_image()
     {
-        $msg_cdn_url = "http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg";
-
-        return ws_upload_image($msg_cdn_url, 1, 'mzxl_thu.jpeg');    
+        return ws_upload_image($this->image_url, 1, $this->image_name);    
     }
     /**
      * @group local
@@ -57,8 +57,7 @@ class WxUrlTest extends TestCase
      */
     public function test_check_wx_url()
     {
-        $url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
-        $this->assertSame(check_wx_url($url), $url);
+        $this->assertSame(check_wx_url($this->webpage_url), $this->webpage_url);
         $this->assertSame(check_wx_url('http://baidu.com'),"");
     }
 
@@ -70,9 +69,7 @@ class WxUrlTest extends TestCase
         $return_array = ws_insert_by_url('http://baidu.com');        
         $this->assertSame($return_array['post_id'], -1);
 
-        $url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
-
-        $return_array = ws_insert_by_url(str_replace('Yu','uY',$url)); 
+        $return_array = ws_insert_by_url(str_replace('Yu','uY',$this->webpage_url)); 
         $this->assertSame($return_array['post_id'], -3);
     }
 
@@ -81,10 +78,9 @@ class WxUrlTest extends TestCase
      */
     public function test_ws_upload_image_false()
     {
-        $msg_cdn_url = "http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg";
-        $msg_cdn_url_false = str_replace('kNe', 'eNk', $msg_cdn_url);
+        $image_url_false = str_replace('kNe', 'eNk', $this->image_url);
 
-        $return_array = ws_upload_image($msg_cdn_url_false, 1);
+        $return_array = ws_upload_image($image_url_false, 1);
         $this->assertSame($return_array['post_id'], -5);
     }
     /**
@@ -102,12 +98,17 @@ class WxUrlTest extends TestCase
     public function test_ws_check_image_exists()
     {
         self::get_image();
-        $return_array = ws_check_image_exists(1, 'mzxl_thu.jpeg');
-        $this->assertTrue($return_array['post_id'] > 0);
+        $return_array = ws_check_image_exists(1, $this->image_name);
+        $this->assertSame($return_array['err_msg'], 'image already exists');
 
         $return_array = ws_check_image_exists(1, 'Picture2.png');
         $this->assertSame($return_array['post_id'], 0);
     }
     
+    public function test_ws_set_feature_image()
+    {
+        $return_array = ws_set_feature_image(1, $this->image_url, $this->image_name);
+        $this->assertTrue($return_array['post_id'] > 0);
+    }
 }
 ?>

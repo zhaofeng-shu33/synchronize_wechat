@@ -232,6 +232,21 @@ function ws_upload_image($url, $postId, $image_name = Null){
         return array('post_id' => -5, 'err_msg' => 'download feature image failed');
     }
 }
+function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
+    $return_array = ws_upload_image($feature_image_url, $postId, $imageName);
+    if($return_array['post_id'] > 0){
+        $post_meta_id = set_post_thumbnail($postId, $return_array['post_id']);
+        if($post_meta_id == 0){
+            return array('post_id' => $post_meta_id, 'err_msg' => 'set post thumbnail failed');
+        }
+        else{
+            return array('post_id' => $post_meta_id, 'err_msg' => '');
+        }
+    }
+    else{
+        return $return_array;
+    }
+}
 //! \brief: extract image urls from html, and download it to local file system, update image url in postId->postContent
 //! input: $html:raw html text, $postId: post Id
 //! output: status = {'post_id':$postId, 'err_msg':$err_msg}
@@ -240,8 +255,7 @@ function ws_set_image($html, $postId){
 		$setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
 		if ($setFeaturedImage) {
 			preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
-            $return_array = ws_upload_image($matches[2], $postId);
-            @set_post_thumbnail($postId, $return_array['post_id']);
+            ws_set_feature_image($postId, $matches[2]);
 		}
 		// 处理图片及视频资源
         $dom  = str_get_html($html);
