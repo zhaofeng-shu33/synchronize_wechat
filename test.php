@@ -1,7 +1,8 @@
 <?php
 
 use PHPUnit\Framework\TestCase;
-define('ABSPATH', 'C:/Users/H/Documents/tech/php/wordpress-4.9.8/');
+
+define('ABSPATH', getenv("ABSPATH"));
 require_once(ABSPATH . 'wp-config.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
 require_once('insert_by_url.php');
@@ -15,6 +16,7 @@ class WxUrlTest extends TestCase
         }
         else{
             //check for right output of function `get_html`
+            $url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
             $html = get_html($url);
             file_put_contents($html_file_name, $html);
         }
