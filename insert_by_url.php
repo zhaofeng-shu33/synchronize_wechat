@@ -15,23 +15,17 @@ function check_wx_url($url){
 }
 //! \brief: get the html from url
 //! input: $url
-//! output: $html raw text, if any error occurs, return empty string
+//! output: $html raw text, no error handling in this function
 function get_html($url, $timeout = 30){
-    if (function_exists('file_get_contents')) {
-	    $html = @file_get_contents($url);
-    } 
-    if ($html == '') { //fallback to use curl module for https request
-	    $ch = curl_init();
-	    curl_setopt($ch, CURLOPT_URL, $url);
-	    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	    $html = curl_exec($ch);
-	    curl_close($ch);
-    }
-    if(strpos($html,'参数错误')!== 0){
-        return '';
-    }    
+  
+	$ch = curl_init();
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+    curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+	$html = curl_exec($ch);
+	curl_close($ch);
+    
     return $html;
 }
 //! \brief: create new user and add its role as contributor

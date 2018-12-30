@@ -11,11 +11,11 @@ Nowadays, wechat posts are very common and people read traditional webpages in l
 ## Path to achieve our aim
 
 1. Build Developping environment (Turn on Wordpress Debug Mode in `config.php`)
-1. Learn PHP Programming by Doing
 1. Design Modules(PHP Functions) to achieve each sub-goals
 1. Deployment on Real Environment and Testing
 
 ## How to build Developping Environment
+See [wiki](https://github.com/zhaofeng-shu33/wechat_synchronize_to_wordpress/wiki/Developping-Environment)
 
 ### Prerequisite
 

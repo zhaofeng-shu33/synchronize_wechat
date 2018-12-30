@@ -107,15 +107,6 @@ class WxUrlTest extends TestCase
         $return_array = ws_check_image_exists(1, 'Picture2.png');
         $this->assertSame($return_array['post_id'], 0);
     }
-
-    /**
-     * @group network
-     */
-    public function test_get_html()
-    {
-        $url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';        
-        $html_tmp = get_html(str_replace('Yu','uY',$url));
-        $this->assertSame($html_tmp, "");
-    }    
+    
 }
 ?>
