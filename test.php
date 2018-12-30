@@ -11,6 +11,7 @@ class WxUrlTest extends TestCase
     private $webpage_url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
     private $image_url = 'http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg';
     private $image_name = 'mzxl_thu.jpeg';
+    private $checksum_image_url = 'http://res.wx.qq.com/mmbizwap/zh_CN/htmledition/images/pic/appmsg/pic_reward_qrcode.2x3534dd.png';
     private function get_html()
     {
         $html_file_name = 'teach.txt';
@@ -91,7 +92,20 @@ class WxUrlTest extends TestCase
         $return_array = self::get_image();
         $this->assertTrue($return_array['post_id'] > 0);
     }
+    public function test_ws_upload_image_checksum()
+    {
+        $return_array = ws_upload_image($this->checksum_image_url, 1);
+        $this->assertTrue($return_array['post_id'] > 0);
+        $return_array = ws_upload_image($this->checksum_image_url, 1);
+        $this->assertSame($return_array['err_msg'], 'image already exists');
 
+    }
+    public function test_ws_get_image_name()
+    {
+        // use this file for testing
+        $image_name = _get_image_name(__DIR__ . '/asset/' . 'sha1.png', '');
+        $this->assertSame($image_name,'1c45882237028e5792b7add3307ef18631119645.png');
+    }
     /**
      * @group local
      */

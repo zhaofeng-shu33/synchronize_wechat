@@ -181,11 +181,26 @@ function ws_check_image_exists($postId, $image_name){
 	foreach ($media_array as $media_object) {
         $attached_image_id = $media_object->ID;
         $relative_file_path = wp_get_attachment_metadata($attached_image_id)['file'];
-        if(basename($relative_file_path) == $image_name){
+        if(strstr(basename($relative_file_path), $image_name)){
             return array('post_id' => $attached_image_id, 'err_msg' => 'image already exists');
         }
 	}
     return array('post_id' => 0, 'err_msg' => '');
+}
+//! \brief: use file content hash to generate image name
+//!         the image suffix is got from the imageFile.
+//! input: $imageFile: absolute path of the image file
+//!        $prefix: prefix to prepend before the image name
+//! output: image file name, no error handling.
+function _get_image_name($imageFile, $prefix, $extension_=Null){
+    $check_sum = sha1_file($imageFile);
+    $extension = strstr(basename($imageFile), '.');
+    if($extension_)
+        $extension = $extension_;
+    elseif($extension == false)
+        $extension = 'jpeg';
+	$fileName = $prefix  . $check_sum . '.' .  $extension;
+    return $fileName;
 }
 //! \brief: download image from $url and update it for the post with id = $postId
 //! input: $url: wechat image original url
@@ -205,14 +220,17 @@ function ws_upload_image($url, $postId, $image_name = Null){
             $fileName = $image_name;
         }
         else{
-		    $prefixName = get_option('ws_image_name_prefix', 'ws-plugin');
-		    $fileName = $prefixName . '-' . time() . '.jpeg';
+		    $prefixName = get_option('ws_image_name_prefix', 'ws-plugin-');
+            $extension = strstr(basename($url), '.');
+		    $fileName = _get_image_name($tmpFile, $prefixName, $extension);
+            $return_array = ws_check_image_exists($postId, $fileName);
+            if($return_array['post_id'] > 0)
+                return $return_array;
         }
 		$fileArr  = array(
 			'name'     => $fileName,
 			'tmp_name' => $tmpFile
 		);
-        $return_array = ws_check_image_exists($postId, $fileName);
         if($return_array['post_id'] == 0){
 		    $return_obj = @media_handle_sideload($fileArr, $postId);
 		    if (!is_wp_error($return_obj)) { // upload sucessfully
@@ -317,43 +335,32 @@ function ws_insert_by_urls($urls) {
 	$GLOBALS['done'] = true;
 	return $postId;
 }
-function ws_downloadImage($postId, $dom) {
-	// 提取图片
+function ws_downloadImage($postId, $dom, $keepSource = true) {
 	$images            = $dom->find('img');
-	$version           = '2-4-2';
-	// 文章标题
-	$title             = $_REQUEST['post_title'];
-	$centeredImage     = get_option('bp_image_centered', 'no') == 'yes';
-    global $file;
+	$centeredImage     = get_option('ws_image_centered', 'no') == 'yes';
 	foreach ($images as $image) {
 		$src  = $image->getAttribute('src');
-		$type = $image->getAttribute('data-type');
 		if (!$src) {
 			continue;
 		}
 		if (strstr($src, 'res.wx.qq.com')) {
 			continue;
 		}
-		$class = $image->getAttribute('class');
 		if ($centeredImage) {
+    		$class = $image->getAttribute('class');
 			$class .= ' aligncenter';
 			$image->setAttribute('class', $class);
 		}
 		$src = preg_replace('/^\/\//', 'http://', $src, 1);
-		if (!$type || $type == 'other') {
-			$type = 'jpeg';
-		}
         $return_array = ws_upload_image($src, $postId);
     	$id = $return_array['post_id'];
         if($id < 0){
             return $return_array;    
         }
-        else {
+        else { // amend the url
 			$imageInfo = wp_get_attachment_image_src($id, 'full');
 			$src       = $imageInfo[0];
 			$image->setAttribute('src', $src);
-			$image->setAttribute('alt', $title);
-			$image->setAttribute('title', $title);
 		}
 	}
 	$userName = $dom->find('#profileBt a', 0);
@@ -363,15 +370,15 @@ function ws_downloadImage($postId, $dom) {
      else{ // handle 转载
          $userName = $dom->find('.original_account_nickname', 0)->plaintext;
      }
-	$userName = esc_html($userName);
-    file_put_contents($file, "article user name:" . $userName . "\n", FILE_APPEND);
-	// 保留来源
-	$keepSource     = isset($_REQUEST['keep_source']) && $_REQUEST['keep_source'] == 'keep';
+	$userName = esc_html($userName);    
+
+    // clean up the javascript
 	$content = $dom->find('#js_content', 0)->innertext;
 	$content = preg_replace('/data\-([a-zA-Z0-9\-])+\=\"[^\"]*\"/', '', $content);
 	$content = preg_replace('/src=\"(http:\/\/read\.html5\.qq\.com)([^\"])*\"/', '', $content);
 	$content = preg_replace('/class=\"([^\"])*\"/', '', $content);
 	$content = preg_replace('/id=\"([^\"])*\"/', '', $content);
+    // 保留来源
 	if ($keepSource) {
 		$source =
 				"<blockquote class='keep-source'>" .
@@ -381,7 +388,7 @@ function ws_downloadImage($postId, $dom) {
 	}
 	// 保留文章样式
 	$content = trim($content);
-    file_put_contents($file, $content . "\n", FILE_APPEND);
+    return $content;
 	$return_postID = wp_update_post(array(
 		'ID' => $postId,
 		'post_content' =>  $content
