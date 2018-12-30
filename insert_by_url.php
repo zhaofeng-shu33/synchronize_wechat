@@ -69,7 +69,7 @@ function create_new_user($name, $pwd){
 *       'postType'[choice,default:post]: article type
 *		'keepStyle'[bool,default:false]: whether the css of the article is kept
 *		'postCate'[choice,default:not_classcified]: the classification to put the article
-*        'downloadImage'[bool,default:false]: whether download image and save a local copy
+*       'downloadImage'[bool,default:false]: whether download image and save a local copy
 *    }
 * returns: 
 * status = {
@@ -105,7 +105,7 @@ function ws_insert_by_html($html, $config = Null){
 		// 同步任务检查标题是否重复，若重复则跳过
         $post_id = post_exists($title);
 		if ($post_id != 0) {
-			return array('post_id' => -4, 'err_msg' => 'the article is already in the database');
+			return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
 		}
 
 		// 发布日期
@@ -166,10 +166,12 @@ function ws_insert_by_html($html, $config = Null){
 			'post_type'	    => $postType
 		);
         $postId         = null;
-		$postId = @wp_insert_post($post);
-        return array('post_id' => $postId, 'err_msg' => '');
-        // return ws_set_image($html, $postId);
-
+		$postId = wp_insert_post($post);
+        if(is_wp_error($postId)){
+            return array('post_id' => -8, 'err_msg' => $postId->get_error_message());
+        }
+        $setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
+        return ws_set_image($html, $postId, $setFeaturedImage);
 }
 
 //! \brief: get all attached image for $postId and check whether image_name is within it
@@ -187,19 +189,32 @@ function ws_check_image_exists($postId, $image_name){
 	}
     return array('post_id' => 0, 'err_msg' => '');
 }
+//! \brief: guess the image extension from the url
+//! input: $url: image url
+//! output: extension name with the dot
+function get_image_extension_from_url($url){
+  $extension = strstr(basename($url), '.');
+  if($extension == false){
+      preg_match('/wx_fmt=([a-z]+)/', $url, $matches);
+      if(count($matches)==2)
+        $extension = '.' . $matches[1];
+  }
+  return $extension;
+}
 //! \brief: use file content hash to generate image name
 //!         the image suffix is got from the imageFile.
 //! input: $imageFile: absolute path of the image file
 //!        $prefix: prefix to prepend before the image name
+//!        $extension_[optinal]: suffix of the image
 //! output: image file name, no error handling.
 function _get_image_name($imageFile, $prefix, $extension_=Null){
     $check_sum = sha1_file($imageFile);
     $extension = strstr(basename($imageFile), '.');
     if($extension_)
         $extension = $extension_;
-    elseif($extension == false)
-        $extension = 'jpeg';
-	$fileName = $prefix  . $check_sum . '.' .  $extension;
+    elseif($extension == false || $extension == '.tmp')
+        $extension = '.jpeg';
+	$fileName = $prefix  . $check_sum . $extension;
     return $fileName;
 }
 //! \brief: download image from $url and update it for the post with id = $postId
@@ -207,21 +222,19 @@ function _get_image_name($imageFile, $prefix, $extension_=Null){
 //!        $postId: post Id
 //! output: status = {'post_id':$postId, 'err_msg':$err_msg}
 function ws_upload_image($url, $postId, $image_name = Null){
-	$redirectUrl = 'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
-	$coverImageSrc = $redirectUrl . $url;
     if($image_name != Null){
         $return_array = ws_check_image_exists($postId, $image_name);
         if($return_array['post_id'] > 0)
             return $return_array;
     }
-	$tmpFile = download_url($coverImageSrc);
+	$tmpFile = download_url($url);
 	if (is_string($tmpFile)) {
         if($image_name){
             $fileName = $image_name;
         }
         else{
 		    $prefixName = get_option('ws_image_name_prefix', 'ws-plugin-');
-            $extension = strstr(basename($url), '.');
+            $extension = get_image_extension_from_url($url);
 		    $fileName = _get_image_name($tmpFile, $prefixName, $extension);
             $return_array = ws_check_image_exists($postId, $fileName);
             if($return_array['post_id'] > 0)
@@ -232,13 +245,14 @@ function ws_upload_image($url, $postId, $image_name = Null){
 			'tmp_name' => $tmpFile
 		);
         if($return_array['post_id'] == 0){
-		    $return_obj = @media_handle_sideload($fileArr, $postId);
+		    $return_obj = media_handle_sideload($fileArr, $postId);
+            @unlink(tmpFile);
 		    if (!is_wp_error($return_obj)) { // upload sucessfully
                  return array('post_id' => $return_obj, 'err_msg' => 'upload successfully');
 			    // @set_post_thumbnail($postId, $id);
 		    }
             else{ // upload failed, $return_obj is instance of WP_Error
-                return array('post_id' => -6, 'err_msg' => $return_obj->get_error_code());
+                return array('post_id' => -6, 'err_msg' => $return_obj->get_error_message());
             }
         }
         else{ // image already exists
@@ -268,9 +282,8 @@ function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
 //! \brief: extract image urls from html, and download it to local file system, update image url in postId->postContent
 //! input: $html:raw html text, $postId: post Id
 //! output: status = {'post_id':$postId, 'err_msg':$err_msg}
-function ws_set_image($html, $postId){
+function ws_set_image($html, $postId, $setFeaturedImage = false){
     	// 公众号设置 featured image
-		$setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
 		if ($setFeaturedImage) {
 			preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
             ws_set_feature_image($postId, $matches[2]);
@@ -388,15 +401,14 @@ function ws_downloadImage($postId, $dom, $keepSource = true) {
 	}
 	// 保留文章样式
 	$content = trim($content);
-    return $content;
 	$return_postID = wp_update_post(array(
 		'ID' => $postId,
 		'post_content' =>  $content
 	));
     if(is_wp_error($return_postID)){
-        file_put_contents($file, 'Error message' . $return_postID->get_error_message() . "\n", FILE_APPEND);
+        return array('post_id' => -7, 'err_msg' => $return_postID->get_error_message());
     }
-    file_put_contents($file, 'update POST ID' .$postId . "\n", FILE_APPEND);
+    return array('post_id' => $postId, 'err_msg' => 'create post successfully');
     
 }
 ?>

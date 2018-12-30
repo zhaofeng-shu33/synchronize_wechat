@@ -124,5 +124,15 @@ class WxUrlTest extends TestCase
         $return_array = ws_set_feature_image(1, $this->image_url, $this->image_name);
         $this->assertTrue($return_array['post_id'] > 0);
     }
+    public function test_ws_downloadImage()
+    {
+        $html = $this->get_html();
+        $return_array = ws_insert_by_html($html);
+        $this->assertTrue($return_array['post_id'] > 0);
+
+        $postId = $return_array['post_id'];
+        $return_array = ws_set_image($html, $return_array['post_id']);
+        $this->assertTrue($return_array['post_id'] > 0);
+    }
 }
 ?>
