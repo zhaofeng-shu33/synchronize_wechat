@@ -179,7 +179,11 @@ function ws_insert_by_html($html, $config = Null){
 //!        $image_name: image_name to be checked
 //! output: status = {'post_id':$postId, 'err_msg':$err_msg}, if the image exists, set $postId = image attachment id, otherwise set postId=0
 function ws_check_image_exists($postId, $image_name){
-    $media_array = get_attached_media('image', $postId);
+    $media_array_unattached = get_children(array('post_parent' => 0,
+        'post_type' => 'attachment',
+        'post_mime_type' => 'image'
+        ));
+    $media_array = array_merge($media_array_unattached, get_attached_media('image', $postId));
 	foreach ($media_array as $media_object) {
         $attached_image_id = $media_object->ID;
         $relative_file_path = wp_get_attachment_metadata($attached_image_id)['file'];
@@ -187,6 +191,7 @@ function ws_check_image_exists($postId, $image_name){
             return array('post_id' => $attached_image_id, 'err_msg' => 'image already exists');
         }
 	}
+
     return array('post_id' => 0, 'err_msg' => '');
 }
 //! \brief: guess the image extension from the url
