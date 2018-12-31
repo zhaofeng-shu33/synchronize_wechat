@@ -46,11 +46,12 @@
      </td>
      </tr>
      <tr>
-     <textarea type="text" name="given_urls" class="large-text code" rows="3" id="console"></textarea>         
+     <textarea type="text" name="given_urls" class="large-text code" rows="3"></textarea>         
      </tr>
 </table>
 <?php submit_button("Synchronize"); ?>
 </form>
+<textarea id="console" class="large-text code" rows="2" style="display:none"></textarea>
 <script>
 <?php wp_enqueue_script( 'jquery-form');?>
    jQuery("#url").on('submit', function(e){
@@ -59,7 +60,8 @@
        type: "POST",
        url: "<?php echo plugins_url("/synchronize_api.php", __FILE__);?>",
        success: function(data, textSatus, jqXHR){
-           console.log("done");
+           jQuery("#console").val(data);
+           jQuery("#console").attr("style", "display:block");
        }
        })
     }); 
