@@ -21,14 +21,13 @@ function check_wx_url($url){
 //! \param  $url
 //! \return  $html raw text, no error handling in this function
 function get_html($url, $timeout = 30){
-  
-	$ch = curl_init();
-	curl_setopt($ch, CURLOPT_URL, $url);
-	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+    $ch = curl_init();
+    curl_setopt($ch, CURLOPT_URL, $url);
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+    curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-	$html = curl_exec($ch);
-	curl_close($ch);
+    $html = curl_exec($ch);
+    curl_close($ch);
     
     return $html;
 }
@@ -72,7 +71,7 @@ function ws_insert_by_url($url, $config = Null){
 //! \brief insert $wpdb from html, called by ::ws_insert_by_url
 function ws_insert_by_html($html, $config = Null){
 		// whether to remove the original article style
-        $keepStyle = isset($config['keep_style']) && $config['keep_style'];
+        $keepStyle = isset($config['keepStyle']) && $config['keepStyle'];
 		if (!$keepStyle) {
 			$html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
 		}
@@ -347,6 +346,24 @@ function ws_download_image($postId, $dom, $keepSource = true) {
 			$image->setAttribute('src', $src);
 		}
 	}
+    // resolve css background images
+    $content = $dom->find('#js_content', 0)->innertext;
+    $re = '/background-image: url\(&quot;([^\']+)&quot;\)/';
+    preg_match($re, $content, $matches);
+    #echo $content;
+    while(count($matches)==2){
+        $image_url = $matches[1];
+        $return_array = ws_upload_image($image_url, $postId);
+        $id = $return_array['post_id'];
+        if($id < 0)
+            echo $return_array;
+        $imageInfo = wp_get_attachment_image_src($id, 'full');
+        $src       = $imageInfo[0];   
+        $content = preg_replace($re, 'background-image: url(&qquot;'. $src . '&qquot;)', $content, 1);
+        $matches = array();
+        preg_match($re, $content, $matches);
+    }
+    $content = str_replace('&qquot;', '&quot;', $content);
 	$userName = $dom->find('#profileBt a', 0);
      if($userName){
       $userName = $userName->plaintext;
@@ -356,8 +373,7 @@ function ws_download_image($postId, $dom, $keepSource = true) {
      }
 	$userName = esc_html($userName);    
 
-    // clean up the javascript
-    $content = $dom->find('#js_content', 0)->innertext;
+    // clean up the javascript    
     $content = preg_replace('/data\-([a-zA-Z0-9\-])+\=\"[^\"]*\"/', '', $content);
     $content = preg_replace('/src=\"(http:\/\/read\.html5\.qq\.com)([^\"])*\"/', '', $content);
     $content = preg_replace('/class=\"([^\"])*\"/', '', $content);
