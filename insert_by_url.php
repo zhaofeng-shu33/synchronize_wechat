@@ -179,7 +179,7 @@ function ws_insert_by_html($html, $config = Null){
 //!        $image_name: image_name to be checked
 //! output: status = {'post_id':$postId, 'err_msg':$err_msg}, if the image exists, set $postId = image attachment id, otherwise set postId=0
 function ws_check_image_exists($postId, $image_name){
-    $media_array_unattached = get_children(array('post_parent' => 0,
+    $media_array_unattached = get_children(array(
         'post_type' => 'attachment',
         'post_mime_type' => 'image'
         ));
@@ -208,16 +208,13 @@ function get_image_extension_from_url($url){
 }
 //! \brief: use file content hash to generate image name
 //!         the image suffix is got from the imageFile.
-//! input: $imageFile: absolute path of the image file
+//! input: $url: absolute url of the image file
 //!        $prefix: prefix to prepend before the image name
-//!        $extension_[optinal]: suffix of the image
 //! output: image file name, no error handling.
-function _get_image_name($imageFile, $prefix, $extension_=Null){
-    $check_sum = sha1_file($imageFile);
-    $extension = strstr(basename($imageFile), '.');
-    if($extension_)
-        $extension = $extension_;
-    elseif($extension == false || $extension == '.tmp')
+function _get_image_name($url, $prefix, $extension_=Null){
+    $check_sum = sha1($url);
+    $extension = get_image_extension_from_url($url);
+    if($extension == false)
         $extension = '.jpeg';
 	$fileName = $prefix  . $check_sum . $extension;
     return $fileName;
@@ -227,24 +224,18 @@ function _get_image_name($imageFile, $prefix, $extension_=Null){
 //!        $postId: post Id
 //! output: status = {'post_id':$postId, 'err_msg':$err_msg}
 function ws_upload_image($url, $postId, $image_name = Null){
-    if($image_name != Null){
-        $return_array = ws_check_image_exists($postId, $image_name);
-        if($return_array['post_id'] > 0)
-            return $return_array;
+    if($image_name == Null){
+		$prefixName = get_option('ws_image_name_prefix', 'ws-plugin-');
+        $fileName = _get_image_name($url, $prefixName);
     }
+    else{
+        $fileName = $image_name;
+    }
+    $return_array = ws_check_image_exists($postId, explode('.', $fileName)[0]);
+    if($return_array['post_id'] > 0)
+        return $return_array;
 	$tmpFile = download_url($url);
 	if (is_string($tmpFile)) {
-        if($image_name){
-            $fileName = $image_name;
-        }
-        else{
-		    $prefixName = get_option('ws_image_name_prefix', 'ws-plugin-');
-            $extension = get_image_extension_from_url($url);
-		    $fileName = _get_image_name($tmpFile, $prefixName, $extension);
-            $return_array = ws_check_image_exists($postId, $fileName);
-            if($return_array['post_id'] > 0)
-                return $return_array;
-        }
 		$fileArr  = array(
 			'name'     => $fileName,
 			'tmp_name' => $tmpFile
@@ -270,6 +261,9 @@ function ws_upload_image($url, $postId, $image_name = Null){
     }
 }
 function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
+    if(has_post_thumbnail($postId)){
+        return array('post_id' => get_post_thumbnail_id($postId), 'err_msg' => 'post already has thumbnail');
+    }
     $return_array = ws_upload_image($feature_image_url, $postId, $imageName);
     if($return_array['post_id'] > 0){
         $post_meta_id = set_post_thumbnail($postId, $return_array['post_id']);

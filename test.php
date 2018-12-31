@@ -50,8 +50,6 @@ class WxUrlTest extends TestCase
         $return_array = ws_insert_by_html($html);
         $pid = $return_array['post_id'];
         $this->assertTrue($pid > 0);
-        // no state should be traced
-        wp_delete_post($pid, true);    
     }
     /**
      * @group local
@@ -103,8 +101,8 @@ class WxUrlTest extends TestCase
     public function test_ws_get_image_name()
     {
         // use this file for testing
-        $image_name = _get_image_name(__DIR__ . '/asset/' . 'sha1.png', '');
-        $this->assertSame($image_name,'1c45882237028e5792b7add3307ef18631119645.png');
+        $image_name = _get_image_name($this->image_url, '');
+        $this->assertSame($image_name,'85463a5165d4e4bb33579bff7cf005b162ec8ac0.jpeg');
     }
     /**
      * @group local
