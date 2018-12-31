@@ -73,9 +73,11 @@ function ws_process_request(){
             ws_insert_by_urls($url_list);
         }
         else{
-            ws_get_history_url();
+            header('Content-Type:application/json');
+            $url_list = ws_get_history_url();
+            echo json_encode($url_list);            
         }
     }   
 }
-echo "good";
+ws_process_request();
 ?>

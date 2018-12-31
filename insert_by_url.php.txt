@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * @version 1.0
  * \file insert_by_url.php
@@ -71,24 +71,25 @@ function ws_insert_by_url($url, $config = Null){
 }
 //! \brief insert $wpdb from html, called by ::ws_insert_by_url
 function ws_insert_by_html($html, $config = Null){
-		// whether to remove the original article style
+		// 是否移除原文样式
         $keepStyle = isset($config['keep_style']) && $config['keep_style'];
 		if (!$keepStyle) {
 			$html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
 		}
+		// 文章标题
 		preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
-        // make sure the title of the article exists
+        // 确保有标题
 		if (count($matches)==0) {
 			return array('post_id' => -3, 'err_msg' => 'cannot get title from html');
 		}
 		$title = trim($matches[2]);
-		// check whether the title is duplicate. If duplicate, return
+		// 同步任务检查标题是否重复，若重复则跳过
         $post_id = post_exists($title);
 		if ($post_id != 0) {
 			return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
 		}
 
-		// publish date
+		// 发布日期
         $changePostTime = isset($config['changePostTime']) && $config['changePostTime'];
 		if ($changePostTime) {
 			$postDate = date('Y-m-d H:i:s', current_time('timestamp'));
@@ -97,22 +98,28 @@ function ws_insert_by_html($html, $config = Null){
 			$postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
 			$postDate = date('Y-m-d H:i:s', strtotime($postDate));
 		}
-    	// default is draft
+    	// 默认是存为草稿
 	    $postStatus = isset($config['postStatus']) && in_array($config['postStatus'], array('publish', 'pending', 'draft')) ?
 					$config['postStatus'] : 'draft';
 
-	    // article type, default is post
+	    // 文章类型，默认是post
 	    $postType       = isset($config['postType']) ? $config['postType'] : 'post';
 
-		// whether to change author，not implemented yet
+		// 是否改变作者，如改变则新建，不改变则默认是当前登录作者
         $changeAuthor   = isset($config['changeAuthor']) && $config['changeAuthor'];
 		if ($changeAuthor){
-			// create new user.. todo
+			// 创建用户
+            $userName = $dom->find('#post-user', 0)->plaintext;
+            $userName = esc_html($userName);
+            $userId = create_new_user($userName, crc32($userName));   
+            if(!$userId){
+                return array('post_id' => 0, 'err_msg' => 'error occurs when create new user with userName = ' . $userName);
+            }
 		} else {
-			// author of wordpress blog 
+			// 默认博客作者
 			$userId = get_current_user_id();
 		}
-	    // article category, default is Uncategorized
+	    // 文章分类，默认是未分类（1）
 		$cates = isset($config['postCate'])? $config['postCate'] : ''; 	
 		if ($cates) {
 			$cateIds = array();
@@ -266,12 +273,12 @@ function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
 //! \param  $html: raw html text, $postId: post Id
 //! \return  status = {'post_id':$postId, 'err_msg':$err_msg}
 function ws_set_image($html, $postId, $setFeaturedImage = false){
-    	// set featured image
+    	// 公众号设置 featured image
 		if ($setFeaturedImage) {
 			preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
             ws_set_feature_image($postId, $matches[2]);
 		}
-		// process images(tested) and video(not tested)
+		// 处理图片及视频资源
         $dom  = str_get_html($html);
 		$imageDoms = $dom->find('img');
 		$videoDoms = $dom->find('.video_iframe');
@@ -286,9 +293,10 @@ function ws_set_image($html, $postId, $setFeaturedImage = false){
 		}
 		foreach ($videoDoms as $videoDom) {
 			$dataSrc = $videoDom->getAttribute('data-src');
+			// 视频不用跳板
 			$videoDom->setAttribute('src', $dataSrc);
 		}
-		// images must be downloaded to local file system
+		// 下载图片到本地
 		return ws_download_image($postId, $dom);
 }
 
@@ -299,13 +307,19 @@ function ws_insert_by_urls($urls) {
     }
 	global $wpdb;
 
+	// 微信原作者
 	$changeAuthor   = false;
+	// 改变发布时间
 	$changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
+	// 默认是直接发布
 	$postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
 						$_REQUEST['post_status'] : 'publish';
+	// 保留文章样式
 	$keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
+	// 文章分类，默认是未分类（1）
 	$postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
 	$postCate       = array($postCate);
+	// 文章类型，默认是post
 	$postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
 
 	
@@ -359,7 +373,7 @@ function ws_download_image($postId, $dom, $keepSource = true) {
      if($userName){
       $userName = $userName->plaintext;
      }
-     else{ // handle republish
+     else{ // handle 转载
          $userName = $dom->find('.original_account_nickname', 0)->plaintext;
      }
 	$userName = esc_html($userName);    
@@ -370,6 +384,7 @@ function ws_download_image($postId, $dom, $keepSource = true) {
 	$content = preg_replace('/src=\"(http:\/\/read\.html5\.qq\.com)([^\"])*\"/', '', $content);
 	$content = preg_replace('/class=\"([^\"])*\"/', '', $content);
 	$content = preg_replace('/id=\"([^\"])*\"/', '', $content);
+    // 保留来源
 	if ($keepSource) {
 		$source =
 				"<blockquote class='keep-source'>" .
@@ -377,6 +392,7 @@ function ws_download_image($postId, $dom, $keepSource = true) {
 				"</blockquote>";
 		$content .= $source;
 	}
+	// 保留文章样式
 	$content = trim($content);
 	$return_postID = wp_update_post(array(
 		'ID' => $postId,
