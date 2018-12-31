@@ -232,15 +232,20 @@ function ws_upload_image($url, $postId, $image_name = Null){
         $fileName = $image_name;
     }
     $return_array = ws_check_image_exists($postId, explode('.', $fileName)[0]);
-    if($return_array['post_id'] > 0)
+    $r_post_id = $return_array['post_id'];
+    if($r_post_id > 0){
+        if(wp_get_post_parent_id($r_post_id) ==0){
+            wp_update_post($r_post_id, array('post_parent' => $postId));
+        }
         return $return_array;
+    }
 	$tmpFile = download_url($url);
 	if (is_string($tmpFile)) {
 		$fileArr  = array(
 			'name'     => $fileName,
 			'tmp_name' => $tmpFile
 		);
-        if($return_array['post_id'] == 0){
+        if($r_post_id == 0){
 		    $return_obj = media_handle_sideload($fileArr, $postId);
             @unlink(tmpFile);
 		    if (!is_wp_error($return_obj)) { // upload sucessfully
