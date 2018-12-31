@@ -297,7 +297,7 @@ function ws_set_image($html, $postId, $setFeaturedImage = false){
 			$videoDom->setAttribute('src', $dataSrc);
 		}
 		// 下载图片到本地
-		return ws_downloadImage($postId, $dom);
+		return ws_download_image($postId, $dom);
 }
 
 //! \brief insert url list into $wpdb, calling ::ws_insert_by_url
@@ -341,7 +341,7 @@ function ws_insert_by_urls($urls) {
 	return $postId;
 }
 //! \brief download images in $dom, called by ::ws_set_image
-function ws_downloadImage($postId, $dom, $keepSource = true) {
+function ws_download_image($postId, $dom, $keepSource = true) {
 	$images            = $dom->find('img');
 	$centeredImage     = get_option('ws_image_centered', 'no') == 'yes';
 	foreach ($images as $image) {
