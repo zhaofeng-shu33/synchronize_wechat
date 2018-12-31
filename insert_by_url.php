@@ -1,10 +1,14 @@
 <?php
+/**
+ * @version 1.0
+ * \file insert_by_url.php
+ */
 if(!class_exists('simple_html_dom_node')){
 	require_once("php-simple-html-dom/simple_html_dom.php");
 }
-//! \brief: check the domain name
-//! input: $url
-//! output: trimed $url if $url contains the domain name of wx; otherwise, empty string is returned
+//! \brief  check the domain name
+//! \param  $url
+//! \return  trimed $url if $url contains the domain name of wx; otherwise, empty string is returned
 function check_wx_url($url){
     if (strpos($url, 'http://mp.weixin.qq.com/s') !== false || strpos($url, 'https://mp.weixin.qq.com/s') !== false) {
         $url = str_replace('http://', 'https://', $url);
@@ -13,9 +17,9 @@ function check_wx_url($url){
     else
         return '';
 }
-//! \brief: get the html from url
-//! input: $url
-//! output: $html raw text, no error handling in this function
+//! \brief  get the html from url
+//! \param  $url
+//! \return  $html raw text, no error handling in this function
 function get_html($url, $timeout = 30){
   
 	$ch = curl_init();
@@ -28,54 +32,31 @@ function get_html($url, $timeout = 30){
     
     return $html;
 }
-//! \brief: create new user and add its role as contributor
-//! input: name and password for the new user
-//! output: newly created user id
-//! status: not tested
-function create_new_user($name, $pwd){
-    $userId   = wp_create_user($name, $pwd);
-    // 用户已存在
-    if($userId){
-        if ($userId->get_error_code() == 'existing_user_login') {
-            $userData = get_user_by('login', $bizVal);
-        } else if(is_integer($userId) > 0) {
-            $userData = get_userdata($userId);
-        } else {
-            // 错误情况, return invalid user_id
-            return 0;
-        }
-        // 默认是投稿者
-        $userData->add_role('contributor');
-        $userData->remove_role('subscriber');
-        $userData->display_name = $userName;
-        $userData->nickname     = $userName;
-        $userData->first_name   = $userName;
-        wp_update_user($userData);
-        $userId = $userData->ID;
-    } else {
-        // 默认博客作者
-        $userId = get_current_user_id();
-    }
-    return $userId;
-}
+
 /**
-* intro: this function insert wechat article to the wp-database
+* \brief this function insert wechat article to the wp-database
 * this function relies on global variable $wpdb and the php module $curl
-* input:
-* $config = {
-* 		'changeAuthor'[bool,default:false]:whether to keep the original author
-*		'changePostTime'[bool,default:false]: whether to keep the original post time
-*		'postStatus'[choice,default:draft]: article status
-*       'postType'[choice,default:post]: article type
-*		'keepStyle'[bool,default:false]: whether the css of the article is kept
-*		'postCate'[choice,default:not_classcified]: the classification to put the article
-*       'downloadImage'[bool,default:false]: whether download image and save a local copy
-*    }
-* returns: 
-* status = {
-*     'post_id'[int]: if post_id = 0, error occurs
-*     'err_msg'[str]: if no error, empty str      
-*   }
+* \param $config
+* \parblock
+*
+*     $config = {
+* 		    'changeAuthor'[bool,default:false]:whether to keep the original author
+*		    'changePostTime'[bool,default:false]: whether to keep the original post time
+*		    'postStatus'[choice,default:draft]: article status
+*           'postType'[choice,default:post]: article type
+*		    'keepStyle'[bool,default:false]: whether the css of the article is kept
+*	    	'postCate'[choice,default:not_classcified]: the classification to put the article
+*           'downloadImage'[bool,default:false]: whether download image and save a local copy
+*     }
+* \endparblock
+* \return $status
+* \parblock
+*
+*     $status = {
+*         'post_id'[int]: if post_id = 0, error occurs
+*         'err_msg'[str]: if no error, empty str      
+*     }
+* \endparblock
 */
 function ws_insert_by_url($url, $config = Null){
 	    $url = check_wx_url($url);
@@ -88,7 +69,7 @@ function ws_insert_by_url($url, $config = Null){
 		}
         return ws_insert_by_html($html, $config);
 }
-
+//! \brief insert $wpdb from html, called by ::ws_insert_by_url
 function ws_insert_by_html($html, $config = Null){
 		// 是否移除原文样式
         $keepStyle = isset($config['keep_style']) && $config['keep_style'];
@@ -174,10 +155,12 @@ function ws_insert_by_html($html, $config = Null){
         return ws_set_image($html, $postId, $setFeaturedImage);
 }
 
-//! \brief: get all attached image for $postId and check whether image_name is within it
-//! input: $postId: post Id
-//!        $image_name: image_name to be checked
-//! output: status = {'post_id':$postId, 'err_msg':$err_msg}, if the image exists, set $postId = image attachment id, otherwise set postId=0
+//! \brief  get all attached image for $postId and check whether image_name is within it
+//! \param  postId post Id
+//! \param image_name image_name to be checked
+//! \return  $status
+//! `{'post_id':$postId, 'err_msg':$err_msg}`
+//! if the image exists, set $postId = image attachment id, otherwise set postId = 0
 function ws_check_image_exists($postId, $image_name){
     $media_array_unattached = get_children(array(
         'post_type' => 'attachment',
@@ -194,9 +177,10 @@ function ws_check_image_exists($postId, $image_name){
 
     return array('post_id' => 0, 'err_msg' => '');
 }
-//! \brief: guess the image extension from the url
-//! input: $url: image url
-//! output: extension name with the dot
+
+//! \brief  guess the image extension from the url
+//! \param  $url: image url
+//! \return  extension name with the dot
 function get_image_extension_from_url($url){
   $extension = strstr(basename($url), '.');
   if($extension == false){
@@ -206,11 +190,11 @@ function get_image_extension_from_url($url){
   }
   return $extension;
 }
-//! \brief: use file content hash to generate image name
+//! \brief  use file content hash to generate image name
 //!         the image suffix is got from the imageFile.
-//! input: $url: absolute url of the image file
-//!        $prefix: prefix to prepend before the image name
-//! output: image file name, no error handling.
+//! \param  $url: absolute url of the image file
+//! \param  $prefix: prefix to prepend before the image name
+//! \return  image file name, no error handling.
 function _get_image_name($url, $prefix, $extension_=Null){
     $check_sum = sha1($url);
     $extension = get_image_extension_from_url($url);
@@ -219,10 +203,11 @@ function _get_image_name($url, $prefix, $extension_=Null){
 	$fileName = $prefix  . $check_sum . $extension;
     return $fileName;
 }
-//! \brief: download image from $url and update it for the post with id = $postId
-//! input: $url: wechat image original url
-//!        $postId: post Id
-//! output: status = {'post_id':$postId, 'err_msg':$err_msg}
+//! \brief  download image from $url and update it for the post with id = $postId
+//! \param  $url: wechat image original url
+//! \param  $postId: post Id
+//! \return $status
+//! `status = {'post_id':$postId, 'err_msg':$err_msg}`
 function ws_upload_image($url, $postId, $image_name = Null){
     if($image_name == Null){
 		$prefixName = get_option('ws_image_name_prefix', 'ws-plugin-');
@@ -265,6 +250,7 @@ function ws_upload_image($url, $postId, $image_name = Null){
         return array('post_id' => -5, 'err_msg' => 'download feature image failed');
     }
 }
+//! \brief: set the thumbnail image for the specified post, called by ::ws_set_image
 function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
     if(has_post_thumbnail($postId)){
         return array('post_id' => get_post_thumbnail_id($postId), 'err_msg' => 'post already has thumbnail');
@@ -283,9 +269,9 @@ function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
         return $return_array;
     }
 }
-//! \brief: extract image urls from html, and download it to local file system, update image url in postId->postContent
-//! input: $html:raw html text, $postId: post Id
-//! output: status = {'post_id':$postId, 'err_msg':$err_msg}
+//! \brief  extract image urls from html, and download it to local file system, update image url in postId->postContent
+//! \param  $html: raw html text, $postId: post Id
+//! \return  status = {'post_id':$postId, 'err_msg':$err_msg}
 function ws_set_image($html, $postId, $setFeaturedImage = false){
     	// 公众号设置 featured image
 		if ($setFeaturedImage) {
@@ -313,6 +299,8 @@ function ws_set_image($html, $postId, $setFeaturedImage = false){
 		// 下载图片到本地
 		return ws_downloadImage($postId, $dom);
 }
+
+//! \brief insert url list into $wpdb, calling ::ws_insert_by_url
 function ws_insert_by_urls($urls) {
     if ( is_admin() ) {
         require_once(ABSPATH . 'wp-admin/includes/admin.php');
@@ -352,6 +340,7 @@ function ws_insert_by_urls($urls) {
 	$GLOBALS['done'] = true;
 	return $postId;
 }
+//! \brief download images in $dom, called by ::ws_set_image
 function ws_downloadImage($postId, $dom, $keepSource = true) {
 	$images            = $dom->find('img');
 	$centeredImage     = get_option('ws_image_centered', 'no') == 'yes';

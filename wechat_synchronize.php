@@ -44,7 +44,7 @@ function ws_plugin_options(){
 /**
  * \brief Custom functions to retrieve the access_token from the database
  * @param: void
- * @return: valid access token string
+ * @return valid access token string
  */
 function ws_get_access_token(){
   // notice that the access_token is the serialized json string containing the expired time (UTC)
@@ -54,7 +54,7 @@ function ws_get_access_token(){
 /**
  * \brief Custom functions to save the access_token to the database
  * @param: access token string
- * @return: void
+ * @return void
  */
 function ws_save_access_token($token){
     update_option('access_token', $token);
@@ -62,7 +62,7 @@ function ws_save_access_token($token){
 
 /**
  * @param: valid access token
- * @return: url list of current wechat account prior to current date
+ * @return url list of current wechat account prior to current date
  */
 function ws_get_history_url(){
     $api = new Api(
