@@ -181,7 +181,7 @@ function ws_check_image_exists($postId, $image_name){
 //! \brief  guess the image extension from the url
 //! \param  $url: image url
 //! \return  extension name with the dot
-function get_image_extension_from_url($url){
+function _get_image_extension_from_url($url){
   $extension = strstr(basename($url), '.');
   if($extension == false){
       preg_match('/wx_fmt=([a-z]+)/', $url, $matches);
@@ -197,7 +197,7 @@ function get_image_extension_from_url($url){
 //! \return  image file name, no error handling.
 function _get_image_name($url, $prefix, $extension_=Null){
     $check_sum = sha1($url);
-    $extension = get_image_extension_from_url($url);
+    $extension = _get_image_extension_from_url($url);
     if($extension == false)
         $extension = '.jpeg';
 	$fileName = $prefix  . $check_sum . $extension;

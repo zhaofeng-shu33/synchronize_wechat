@@ -71,7 +71,12 @@ class WxUrlTest extends TestCase
         $return_array = ws_insert_by_url(str_replace('Yu','uY',$this->webpage_url)); 
         $this->assertSame($return_array['post_id'], -3);
     }
+    public function test_ws_insert_by_url_true()
+    {
+        $return_array = ws_insert_by_url($this->webpage_url);        
+        $this->assertTrue($return_array['post_id'] > 0);
 
+    }
     /**
      * @group network
      */
