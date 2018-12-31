@@ -7,7 +7,6 @@
 require_once( dirname(dirname(dirname(dirname( __FILE__ )))) . '/wp-config.php' );
 require_once(ABSPATH . 'wp-config.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
-define('WP_ADMIN', 1);
 
 require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
@@ -72,7 +71,7 @@ function ws_get_history_url(){
 
 function ws_process_request(){
     // if no post data, return 
-    $sync_history = isset($_REQUEST['ws_history']) ? true : false;
+    $sync_history = isset($_REQUEST['ws_history']) ? $_REQUEST['ws_history']=='ws_Yes' : false;
     if($sync_history){
             $return_array = ws_get_history_url();
     }
@@ -90,7 +89,7 @@ function ws_process_request(){
     echo json_encode($return_array);
 }
 #header('Content-Type:application/json');
-if ( is_admin() ) {
+if ( current_user_can('manage_options') ) {
     ws_process_request();
 }
 else{

@@ -224,12 +224,11 @@ function ws_upload_image($url, $postId, $image_name = Null){
 			'tmp_name' => $tmpFile
 		);
         if($r_post_id == 0){
-		    $return_obj = media_handle_sideload($fileArr, $postId);
+	    $return_obj = media_handle_sideload($fileArr, $postId);
             @unlink(tmpFile);
-		    if (!is_wp_error($return_obj)) { // upload sucessfully
-                 return array('post_id' => $return_obj, 'err_msg' => 'upload successfully');
-			    // @set_post_thumbnail($postId, $id);
-		    }
+            if (!is_wp_error($return_obj)) { // upload sucessfully
+                return array('post_id' => $return_obj, 'err_msg' => 'upload successfully');
+	    }
             else{ // upload failed, $return_obj is instance of WP_Error
                 return array('post_id' => -6, 'err_msg' => $return_obj->get_error_message());
             }
@@ -358,23 +357,22 @@ function ws_download_image($postId, $dom, $keepSource = true) {
 	$userName = esc_html($userName);    
 
     // clean up the javascript
-	$content = $dom->find('#js_content', 0)->innertext;
-	$content = preg_replace('/data\-([a-zA-Z0-9\-])+\=\"[^\"]*\"/', '', $content);
-	$content = preg_replace('/src=\"(http:\/\/read\.html5\.qq\.com)([^\"])*\"/', '', $content);
-	$content = preg_replace('/class=\"([^\"])*\"/', '', $content);
-	$content = preg_replace('/id=\"([^\"])*\"/', '', $content);
-	if ($keepSource) {
-		$source =
-				"<blockquote class='keep-source'>" .
-				"<p>始发于微信公众号：{$userName}</p>" .
-				"</blockquote>";
-		$content .= $source;
-	}
-	$content = trim($content);
-	$return_postID = wp_update_post(array(
-		'ID' => $postId,
-		'post_content' =>  $content
-	));
+    $content = $dom->find('#js_content', 0)->innertext;
+    $content = preg_replace('/data\-([a-zA-Z0-9\-])+\=\"[^\"]*\"/', '', $content);
+    $content = preg_replace('/src=\"(http:\/\/read\.html5\.qq\.com)([^\"])*\"/', '', $content);
+    $content = preg_replace('/class=\"([^\"])*\"/', '', $content);
+    $content = preg_replace('/id=\"([^\"])*\"/', '', $content);
+    if ($keepSource) {
+        $source = "<blockquote class='keep-source'>" .
+                        "<p>始发于微信公众号：{$userName}</p>" .
+                        "</blockquote>";
+        $content .= $source;
+    }
+    $content = trim($content);
+    $return_postID = wp_update_post(array(
+            'ID' => $postId,
+            'post_content' =>  $content
+    ));
     if(is_wp_error($return_postID)){
         return array('post_id' => -7, 'err_msg' => $return_postID->get_error_message());
     }
