@@ -40,7 +40,7 @@ class WxUrlTest extends TestCase
 
         $html_change_title = preg_replace('/msg_title = "([^\"]+)"/', 'msg_title = "Hello world!"', $html);
         $return_array = ws_insert_by_html($html_change_title);
-        $this->assertSame($return_array['post_id'], -4);
+        $this->assertSame($return_array['err_msg'], 'the article is already in the database');
     }
     /**
      * @group local
