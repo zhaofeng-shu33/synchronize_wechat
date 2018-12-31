@@ -4,11 +4,16 @@
  * @version 1.0
  * @file synchronize_api.php
  */
+require_once( dirname(dirname(dirname(dirname( __FILE__ )))) . '/wp-config.php' );
+require_once(ABSPATH . 'wp-config.php');
+require_once(ABSPATH . 'wp-admin/includes/admin.php');
+define('WP_ADMIN', 1);
 
 require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
 use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
+
 require_once 'insert_by_url.php';
 /**
  * \brief Custom functions to retrieve the access_token from the database
@@ -44,6 +49,9 @@ function ws_get_history_url(){
     );
     list($err, $data) = $api->get_material_count();
     // each time maximal 20 articles fetch is allowed
+    if($err){
+        return array('post_id' => -1*$err->errcode, 'err_msg' => $err->errmsg);
+    }
     $offset = 0;
     
     $url_list = array();
@@ -59,25 +67,34 @@ function ws_get_history_url(){
         }
         $offset += 20;
     }
-    ws_insert_by_urls($url_list);
+    return $url_list;
 }
 
 function ws_process_request(){
     // if no post data, return 
     $sync_history = isset($_REQUEST['ws_history']) ? true : false;
-    if(!$sync_history){
-        $urls_str = $_REQUEST['given_urls'];
+    if($sync_history){
+            $return_array = ws_get_history_url();
+    }
+    else{
+        $urls_str = isset($_REQUEST['given_urls']) ? $_REQUEST['given_urls'] : '';
         if($urls_str != ''){
             $url_list = explode("\n", $urls_str);
             // file_put_contents($file, '');                    
-            ws_insert_by_urls($url_list);
+            $return_array = ws_insert_by_urls($url_list);
         }
         else{
-            header('Content-Type:application/json');
-            $url_list = ws_get_history_url();
-            echo json_encode($url_list);            
+            $return_array = array('post_id' => -10, 'err_msg' => 'no urls are given');
         }
-    }   
+    }
+    echo json_encode($return_array);
 }
-ws_process_request();
+#header('Content-Type:application/json');
+if ( is_admin() ) {
+    ws_process_request();
+}
+else{
+    echo json_encode(array('post_id' => -9, 'err_msg'=>'not admin, no privilege'));
+}
+
 ?>

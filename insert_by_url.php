@@ -294,37 +294,30 @@ function ws_set_image($html, $postId, $setFeaturedImage = false){
 
 //! \brief insert url list into $wpdb, calling ::ws_insert_by_url
 function ws_insert_by_urls($urls) {
-    if ( is_admin() ) {
-        require_once(ABSPATH . 'wp-admin/includes/admin.php');
-    }
-	global $wpdb;
-
-	$changeAuthor   = false;
-	$changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
-	$postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
-						$_REQUEST['post_status'] : 'publish';
-	$keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
-	$postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
-	$postCate       = array($postCate);
-	$postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
-
+    $changeAuthor   = false;
+    $changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
+    $postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
+                                            $_REQUEST['post_status'] : 'publish';
+    $keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
+    $postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
+    $postCate       = array($postCate);
+    $postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
 	
-	$urls           = str_replace('https', 'http', $urls);
-    global $file;
     $config = array(
 		'changeAuthor'    => $changeAuthor,
 		'changePostTime'  => $changePostTime,
 		'postStatus'   => $postStatus,
-        'postType' => $postType,
+                'postType' => $postType,
 		'keepStyle'     => $keepStyle,
 		'postCate' => $postCate,
-        'downloadImage' => true
-	);
-	foreach ($urls as $url) {
-        ws_insert_by_url($url, $config);
-	}
-	$GLOBALS['done'] = true;
-	return $postId;
+                'downloadImage' => true
+    );
+    foreach ($urls as $url) {
+        $return_array = ws_insert_by_url($url, $config);
+        if($return_array['post_id'] <= 0)
+            return $return_array;
+    }
+    return $return_array;
 }
 //! \brief download images in $dom, called by ::ws_set_image
 function ws_download_image($postId, $dom, $keepSource = true) {
@@ -385,7 +378,6 @@ function ws_download_image($postId, $dom, $keepSource = true) {
     if(is_wp_error($return_postID)){
         return array('post_id' => -7, 'err_msg' => $return_postID->get_error_message());
     }
-    return array('post_id' => $postId, 'err_msg' => 'create post successfully');
-    
+    return array('post_id' => $postId, 'err_msg' => 'create post successfully');    
 }
 ?>
