@@ -92,7 +92,7 @@ function ws_insert_by_html($html, $config = Null){
     if ($post_id != 0) {
         //check whether post content is empty;
         if(strlen(get_post($post_id)->post_content)==0){
-            return ws_set_image($html, $postId, $config);            
+            return ws_set_image($html, $post_id, $config);            
         }
         return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
     }
@@ -154,7 +154,7 @@ function ws_insert_by_html($html, $config = Null){
     return ws_set_image($html, $postId, $config);
 }
 
-//! \brief  get all attached image for $postId and check whether image_name is within it
+//! \brief  get 1. attached image for $postId, 2. unattached image, and check whether image_name is within it
 //! \param  postId post Id
 //! \param image_name image_name to be checked
 //! \return  $status
