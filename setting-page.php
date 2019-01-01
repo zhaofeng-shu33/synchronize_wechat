@@ -19,7 +19,7 @@
 <form id="url">
 <table class="form-table">
     <tr>
-     <th scope="row"><label for="ws_history">Get preivous articles Url</label></th>
+     <th scope="row"><label for="ws_history">Get preivous articles</label></th>
      <td>
         <select name="ws_history">
                 <option value="ws_Yes" selected>Yes</option>
@@ -59,6 +59,8 @@
 ?>
     var url_list = [];
     var url_global_id = 0;
+    var global_offset = 0;
+    var get_news_termination = false;
     var submit_single = function(url){
         var data_ = {
             'action': 'ws_process_request',
@@ -75,7 +77,6 @@
          data: data_,
          success: function(data, textStatus, jqXHR){
              var console = jQuery("#console");
-             console.attr("style", "display:block");
              var previous_value = console.val();
              console.val(previous_value  + data + "\n");
              var row = parseInt(console.attr("rows"));
@@ -83,6 +84,10 @@
              var new_url = url_list.pop();
              if(new_url != undefined){
                  submit_single(new_url);
+             }
+             else{
+                if(jQuery('select[name="keep_style"]').val() == 'ws_Yes' && get_news_termination == false)
+                    get_news();
              }
          }
         })        
@@ -94,40 +99,47 @@
             submit_single(url);
         }          
     }
+    var get_news = function(){
+        jQuery.ajax({
+            type: "POST",
+            url: ajaxurl,
+            timeout: 35000,
+            data: {'action':'ws_process_request',
+                    'offset': global_offset,
+                    'ws_history':jQuery('select[name="keep_style"]').val()
+                   },
+            success: function(data, textStatus, jqXHR){
+                var result_array = JSON.parse(data);
+                var console = jQuery("#console");
+                var previous_value = console.val();
+                console.val(previous_value + "get urls : " + result_array.length + "\n");
+                var row = parseInt(console.attr("rows"));
+                console.attr("rows", row+1);
+                // issue new requests for each url in result_array
+                if(result_array.length == 0)
+                    get_news_termination = true;
+                else{
+                    url_list = concat(url_list, result_array);
+                    submit_multiple();
+                    global_offset += 20;
+                }                
+            },
+            error: function(data, textStatus, errorThrown){
+                var previous_value = console.val();                    
+                jQuery("#console").val(previoust_value + textStatus + "\n");
+            }   
+        });        
+    }
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
        var url_list_string = jQuery('textarea[name="given_urls"]').val();
-       if(url_list_string.search("\n")>0){
+       console.attr("style", "display:block");
+       if(url_list_string.length>0){
            url_list = url_list_string.split("\n");
            submit_multiple();
        }
        else{
-            jQuery(this).ajaxSubmit({
-            type: "POST",
-            url: ajaxurl,
-            timeout: 35000,
-            data: {'action':'ws_process_request', 'offset': 0},
-            success: function(data, textStatus, jqXHR){
-                var result_array = JSON.parse(data);
-                var console = jQuery("#console");
-                if(result_array.length == undefined){
-                    console.val(data);
-                }
-                else{
-                    console.val("get urls : " + result_array.length + "\n");
-                    console.attr("rows", 2);
-                    // issue new requests for each url in result_array
-                    // submit_multiple(result_array);
-                }
-                console.attr("style", "display:block");
-            },
-            error: function(data, textStatus, errorThrown){
-                if(textStatus == 'timeout'){
-                    jQuery("#console").val('timeout');
-                    jQuery("#console").attr("style", "display:block");               
-                }
-            }   
-            })
+           get_news();
        }
     }); 
 </script>
