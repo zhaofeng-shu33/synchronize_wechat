@@ -79,6 +79,10 @@ function ws_insert_by_html($html, $config = Null){
     // check whether the title is duplicate. If duplicate, return
     $post_id = post_exists($title);
     if ($post_id != 0) {
+        //check whether post content is empty;
+        if(strlen(get_post($post_id)->post_content)==0){
+            return ws_set_image($html, $postId, $config);            
+        }
         return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
     }
     // publish date
@@ -136,7 +140,6 @@ function ws_insert_by_html($html, $config = Null){
     if(is_wp_error($postId)){
         return array('post_id' => -8, 'err_msg' => $postId->get_error_message());
     }
-    $setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
     return ws_set_image($html, $postId, $config);
 }
 
@@ -361,7 +364,10 @@ function ws_download_image($postId, $dom, $config = Null) {
         $return_array = ws_upload_image($src, $postId);
         $id = $return_array['post_id'];
         if($id < 0){
-            return $return_array;    
+            if(isset($_REQUEST['debug']) && $_REQUEST['debug'] == 'on' )
+                return $return_array;    
+            else
+                continue;
         }
         else { // amend the url
             $imageInfo = wp_get_attachment_image_src($id, 'full');

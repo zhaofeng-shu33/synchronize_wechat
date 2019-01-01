@@ -26,6 +26,13 @@
                 <option value="ws_No">No</option>
         </select>
      </td>
+     <th scope="row"><label for="change_post_time">Use current time to publish</label></th>
+     <td>
+        <select name="change_post_time">
+                <option value="ws_Yes">Yes</option>
+                <option value="ws_No" selected>No</option>
+        </select>
+     </td>     
      </tr>    
     <tr>
      <th scope="row"><label for="keep_style">Keep original style</label></th>
@@ -35,6 +42,14 @@
                 <option value="remove">No</option>
         </select>
      </td>
+     <th scope="row"><label for="post_status">Default post status</label></th>
+     <td>
+        <select name="post_status">
+                <option value="publish" selected>publish</option>
+                <option value="pending">pending</option>
+                <option value="pending">draft</option>                
+        </select>
+     </td>       
      </tr>
     <tr>
      <th scope="row"><label for="keep_source">Keep original source info</label></th>
@@ -44,6 +59,13 @@
                 <option value="remove">No</option>
         </select>
      </td>
+     <th scope="row"><label for="debug">Debug mode</label></th>
+     <td>
+        <select name="debug">
+                <option value="off">off</option>
+                <option value="on" selected>on</option>
+        </select>
+     </td>      
      </tr>
      <tr>
      <textarea type="text" name="given_urls" class="large-text code" rows="3"></textarea>         
@@ -61,6 +83,7 @@
     var url_global_id = 0;
     var global_offset = 0;
     var get_news_termination = false;
+    var console = jQuery("#console");
     var submit_single = function(url){
         var data_ = {
             'action': 'ws_process_request',
@@ -76,7 +99,6 @@
          timeout: 50000,
          data: data_,
          success: function(data, textStatus, jqXHR){
-             var console = jQuery("#console");
              var previous_value = console.val();
              console.val(previous_value  + data + "\n");
              var row = parseInt(console.attr("rows"));
@@ -89,7 +111,11 @@
                 if(jQuery('select[name="ws_history"]').val() == 'ws_Yes' && get_news_termination == false)
                     get_news();
              }
-         }
+         },
+        error: function(jqXHR, textStatus, errorThrown){
+            var previous_value = console.val();                    
+            console.val(previoust_value + textStatus + '*'+ errorThrown + '*' + url + "\n");
+        }           
         })        
     }
     var submit_multiple = function(){
@@ -100,17 +126,19 @@
         }          
     }
     var get_news = function(){
+        var data_to_sent = 
+                   {'action':'ws_process_request',
+                    'offset': global_offset,
+                    'ws_history':jQuery('select[name="ws_history"]').val()
+                   };
+        global_offset += 20;           
         jQuery.ajax({
             type: "POST",
             url: ajaxurl,
             timeout: 35000,
-            data: {'action':'ws_process_request',
-                    'offset': global_offset,
-                    'ws_history':jQuery('select[name="ws_history"]').val()
-                   },
+            data: data_to_sent,
             success: function(data, textStatus, jqXHR){
                 var result_array = JSON.parse(data);
-                var console = jQuery("#console");
                 var previous_value = console.val();
                 console.val(previous_value + "get urls : " + result_array.length + "\n");
                 var row = parseInt(console.attr("rows"));
@@ -123,12 +151,11 @@
                     submit_multiple();                    
                 }                
             },
-            error: function(data, textStatus, errorThrown){
+            error: function(jqXHR, textStatus, errorThrown){
                 var previous_value = console.val();                    
-                jQuery("#console").val(previoust_value + textStatus + "\n");
+                console.val(previoust_value + textStatus + '*' + errorThrown + '*' + (global_offset - 20) + "\n");
             }   
-        });
-        global_offset += 20;
+        });        
     }
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
