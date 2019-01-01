@@ -62,7 +62,7 @@
        jQuery(this).ajaxSubmit({
        type: "POST",
        url: ajaxurl,
-       timeout: 5000,
+       timeout: 35000,
        data: {'action':'ws_process_request'},
        success: function(data, textSatus, jqXHR){
            jQuery("#console").val(data);

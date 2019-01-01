@@ -25,7 +25,29 @@ function register_ws_settings(){
 function ws_plugin_options(){
     require_once 'setting-page.php';
 }
-require_once "synchronize_api.php";
 
+require_once "synchronize_api.php";
+require_once 'insert_by_url.php';
+
+function ws_process_request(){
+    // if no post data, return 
+    $sync_history = isset($_REQUEST['ws_history']) ? $_REQUEST['ws_history'] == 'ws_Yes' : false;
+    if($sync_history){
+            $return_array = ws_get_history_url();
+    }
+    else{
+        $urls_str = isset($_REQUEST['given_urls']) ? $_REQUEST['given_urls'] : '';
+        if($urls_str != ''){
+            $url_list = explode("\n", $urls_str);
+            // file_put_contents($file, '');                    
+            $return_array = ws_insert_by_urls($url_list);
+        }
+        else{
+            $return_array = array('post_id' => -9, 'err_msg' => 'no urls are given');
+        }
+    }
+    echo json_encode($return_array);
+    wp_die();
+}
 add_action( 'wp_ajax_ws_process_request', 'ws_process_request' );
 ?>

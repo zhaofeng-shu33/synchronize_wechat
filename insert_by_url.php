@@ -22,7 +22,7 @@ function check_wx_url($url){
 //! \return  $html raw text, no error handling in this function
 function get_html($url, $timeout = 30){
     $response = wp_safe_remote_get( $url, array( 'timeout' => $timeout) );    
-    return wp_remote_retrieve_response_message($response);
+    return wp_remote_retrieve_body($response);
 }
 
 /**

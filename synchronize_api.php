@@ -9,7 +9,6 @@ use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;
 use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
 
-require_once 'insert_by_url.php';
 /**
  * \brief Custom functions to retrieve the access_token from the database
  * @param: void
@@ -63,27 +62,6 @@ function ws_get_history_url(){
         $offset += 20;
     }
     return $url_list;
-}
-
-function ws_process_request(){
-    // if no post data, return 
-    $sync_history = isset($_REQUEST['ws_history']) ? $_REQUEST['ws_history'] == 'ws_Yes' : false;
-    if($sync_history){
-            $return_array = ws_get_history_url();
-    }
-    else{
-        $urls_str = isset($_REQUEST['given_urls']) ? $_REQUEST['given_urls'] : '';
-        if($urls_str != ''){
-            $url_list = explode("\n", $urls_str);
-            // file_put_contents($file, '');                    
-            $return_array = ws_insert_by_urls($url_list);
-        }
-        else{
-            $return_array = array('post_id' => -9, 'err_msg' => 'no urls are given');
-        }
-    }
-    echo json_encode($return_array);
-    wp_die();
 }
 
 ?>
