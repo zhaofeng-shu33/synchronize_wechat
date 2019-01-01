@@ -53,13 +53,17 @@
 </form>
 <textarea id="console" class="large-text code" rows="2" style="display:none"></textarea>
 <script>
-<?php wp_enqueue_script( 'jquery-form');?>
+<?php 
+    // https://github.com/jquery-form/form
+    wp_enqueue_script( 'jquery-form');
+?>
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
        jQuery(this).ajaxSubmit({
        type: "POST",
-       url: "<?php echo plugins_url("/synchronize_api.php", __FILE__);?>",
+       url: ajaxurl,
        timeout: 5000,
+       data: {'action':'ws_process_request'},
        success: function(data, textSatus, jqXHR){
            jQuery("#console").val(data);
            jQuery("#console").attr("style", "display:block");

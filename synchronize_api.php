@@ -1,12 +1,8 @@
 <?php
 /**
  * @package wechat_synchronize_api
- * @version 1.0
  * @file synchronize_api.php
  */
-require_once( dirname(dirname(dirname(dirname( __FILE__ )))) . '/wp-config.php' );
-require_once(ABSPATH . 'wp-config.php');
-require_once(ABSPATH . 'wp-admin/includes/admin.php');
 
 require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
@@ -83,17 +79,11 @@ function ws_process_request(){
             $return_array = ws_insert_by_urls($url_list);
         }
         else{
-            $return_array = array('post_id' => -10, 'err_msg' => 'no urls are given');
+            $return_array = array('post_id' => -9, 'err_msg' => 'no urls are given');
         }
     }
     echo json_encode($return_array);
-}
-#header('Content-Type:application/json');
-if ( current_user_can('manage_options') ) {
-    ws_process_request();
-}
-else{
-    echo json_encode(array('post_id' => -9, 'err_msg'=>'not admin, no privilege'));
+    wp_die();
 }
 
 ?>

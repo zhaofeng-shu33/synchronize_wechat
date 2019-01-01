@@ -25,6 +25,7 @@ function register_ws_settings(){
 function ws_plugin_options(){
     require_once 'setting-page.php';
 }
+require_once "synchronize_api.php";
 
-
+add_action( 'wp_ajax_ws_process_request', 'ws_process_request' );
 ?>
