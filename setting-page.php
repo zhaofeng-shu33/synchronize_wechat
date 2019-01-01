@@ -86,7 +86,7 @@
                  submit_single(new_url);
              }
              else{
-                if(jQuery('select[name="keep_style"]').val() == 'ws_Yes' && get_news_termination == false)
+                if(jQuery('select[name="ws_history"]').val() == 'ws_Yes' && get_news_termination == false)
                     get_news();
              }
          }
@@ -106,7 +106,7 @@
             timeout: 35000,
             data: {'action':'ws_process_request',
                     'offset': global_offset,
-                    'ws_history':jQuery('select[name="keep_style"]').val()
+                    'ws_history':jQuery('select[name="ws_history"]').val()
                    },
             success: function(data, textStatus, jqXHR){
                 var result_array = JSON.parse(data);
@@ -119,16 +119,16 @@
                 if(result_array.length == 0)
                     get_news_termination = true;
                 else{
-                    url_list = concat(url_list, result_array);
-                    submit_multiple();
-                    global_offset += 20;
+                    url_list = url_list.concat(result_array);
+                    submit_multiple();                    
                 }                
             },
             error: function(data, textStatus, errorThrown){
                 var previous_value = console.val();                    
                 jQuery("#console").val(previoust_value + textStatus + "\n");
             }   
-        });        
+        });
+        global_offset += 20;
     }
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
