@@ -9,7 +9,7 @@ Author URI: https://github.com/zhaofeng-shu33
 */
 
 if(isset($_REQUEST['test_token']) && $_REQUEST['test_token'] == 'wp'){
-define('ABSPATH', basename(basename(basename(__DIR__))));    
+define('ABSPATH', basename(basename(basename(basename(__FILE__)))));    
 require_once(ABSPATH . 'wp-config.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
     ws_process_request();
