@@ -265,10 +265,9 @@ function ws_set_image($html, $postId, $config = Null){
         preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
         ws_set_feature_image($postId, $matches[2]);
     }
-    // process images(tested) and video(not tested)
+    // process images(tested)
     $dom  = str_get_html($html);
     $imageDoms = $dom->find('img');
-    $videoDoms = $dom->find('.video_iframe');
     $sprindboard = 'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
     foreach ($imageDoms as $imageDom) {
         $dataSrc = $imageDom->getAttribute('data-src');
@@ -278,9 +277,13 @@ function ws_set_image($html, $postId, $config = Null){
         $src  = $sprindboard . $dataSrc;
         $imageDom->setAttribute('src', $src);
     }
+    // video cannot simply be done, tencent video api has not been documented
+    // this feature is not implemented.
+    $videoDoms = $dom->find('.video_iframe');
     foreach ($videoDoms as $videoDom) {
-        $dataSrc = $videoDom->getAttribute('data-src');
-        $videoDom->setAttribute('src', $dataSrc);
+        $videoDom->clear();
+        // $dataSrc = $videoDom->getAttribute('data-src');
+        // $videoDom->setAttribute('src', $dataSrc);
     }
     // images must be downloaded to local file system
     return ws_download_image($postId, $dom, $config);
