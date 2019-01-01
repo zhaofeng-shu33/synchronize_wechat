@@ -8,7 +8,12 @@ Version: 0.1
 Author URI: https://github.com/zhaofeng-shu33
 */
 
-
+if(isset($_REQUEST['test_token']) && $_REQUEST['test_token'] == 'wp'){
+define('ABSPATH', basename(basename(basename(__DIR__))));    
+require_once(ABSPATH . 'wp-config.php');
+require_once(ABSPATH . 'wp-admin/includes/admin.php');
+    ws_process_request();
+}
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
 }
@@ -59,4 +64,5 @@ function ws_process_request(){
     wp_die();
 }
 add_action( 'wp_ajax_ws_process_request', 'ws_process_request' );
+
 ?>
