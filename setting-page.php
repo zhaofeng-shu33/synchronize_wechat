@@ -90,7 +90,8 @@
             'url_id': url_global_id,
             'given_urls': url,
             'keep_source': jQuery('select[name="keep_source"]').val(),
-            'keep_style': jQuery('select[name="keep_style"]').val()
+            'keep_style': jQuery('select[name="keep_style"]').val(),
+            'debug': jQuery('select[name="debug"]').val()
         };
         url_global_id += 1;
         jQuery.ajax({
