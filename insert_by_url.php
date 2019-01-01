@@ -382,11 +382,7 @@ function ws_download_image($postId, $dom, $config = Null) {
     ws_resolve_bg_image($content, $postId);
     $origin = ws_resolve_origin($dom);
 
-    // clean up the javascript
-    $content = preg_replace('/data\-([a-zA-Z0-9\-])+\=\"[^\"]*\"/', '', $content);
-    $content = preg_replace('/src=\"(http:\/\/read\.html5\.qq\.com)([^\"])*\"/', '', $content);
-    $content = preg_replace('/class=\"([^\"])*\"/', '', $content);
-    $content = preg_replace('/id=\"([^\"])*\"/', '', $content);
+    
     $keepSource = isset($config['keepSource']) ? $config['keepSource'] : true;
     if ($keepSource) {
         $source = "<blockquote class='keep-source'>" .
@@ -395,10 +391,11 @@ function ws_download_image($postId, $dom, $config = Null) {
         $content .= $source;
     }
     $content = trim($content);
-    $return_postID = wp_update_post(array(
+    $postArray = array(
             'ID' => $postId,
             'post_content' =>  $content
-    ));
+    );
+    $return_postID = wp_update_post($postArray);
     if(is_wp_error($return_postID)){
         return array('post_id' => -7, 'err_msg' => $return_postID->get_error_message());
     }

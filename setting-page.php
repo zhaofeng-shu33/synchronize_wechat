@@ -154,7 +154,7 @@
             },
             error: function(jqXHR, textStatus, errorThrown){
                 var previous_value = console.val();                    
-                console.val(previoust_value + textStatus + '*' + errorThrown + '*' + (global_offset - 20) + "\n");
+                console.val(previous_value + textStatus + '*' + errorThrown + '*' + (global_offset - 20) + "\n");
             }   
         });        
     }
