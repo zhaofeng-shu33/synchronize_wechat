@@ -109,7 +109,7 @@
                  submit_single(new_url);
              }
              else{
-                if(jQuery('select[name="ws_history"]').val() == 'ws_Yes' && get_news_termination == false)
+                if(jQuery('select[name="ws_history"]').val() == 'ws_Yes' && get_news_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
                     get_news();
              }
          },
@@ -161,7 +161,7 @@
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
        var url_list_string = jQuery('textarea[name="given_urls"]').val();
-       jQuery("#console").attr("style", "display:block");
+       console.attr("style", "display:block");
        if(url_list_string.length>0){
            url_list = url_list_string.split("\n");
            submit_multiple();
