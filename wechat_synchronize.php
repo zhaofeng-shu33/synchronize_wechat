@@ -7,9 +7,11 @@ Author: zhaofeng-shu33
 Version: 0.1
 Author URI: https://github.com/zhaofeng-shu33
 */
+require_once "synchronize_api.php";
+require_once 'insert_by_url.php';
 
 if(isset($_REQUEST['test_token']) && $_REQUEST['test_token'] == 'wp'){
-define('ABSPATH', basename(basename(basename(basename(__FILE__)))));    
+define('ABSPATH', dirname(dirname(dirname(__DIR__))) . '/');
 require_once(ABSPATH . 'wp-config.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
     ws_process_request();
@@ -31,8 +33,7 @@ function ws_plugin_options(){
     require_once 'setting-page.php';
 }
 
-require_once "synchronize_api.php";
-require_once 'insert_by_url.php';
+
 
 function ws_process_request(){
     // if no post data, return 
@@ -40,7 +41,8 @@ function ws_process_request(){
     if($sync_history){
         if(isset($_REQUEST['offset'])){
             $return_array = array();
-            ws_get_history_url_by_offset($return_array, $_REQUEST['offset']);            
+            $num = isset($_REQUEST['num']) ? intval($_REQUEST['offset']) : 20;
+            ws_get_history_url_by_offset($return_array, $_REQUEST['offset'], $num);            
         }
         else{
             $return_array = ws_get_history_url();
