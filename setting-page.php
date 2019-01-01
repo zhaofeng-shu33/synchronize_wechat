@@ -37,7 +37,7 @@
      </td>
      </tr>
     <tr>
-     <th scope="row"><label for="keep_source">Keep original author info</label></th>
+     <th scope="row"><label for="keep_source">Keep original source info</label></th>
      <td>
         <select name="keep_source">
                 <option value="keep" selected>Yes</option>
@@ -59,10 +59,17 @@
        jQuery(this).ajaxSubmit({
        type: "POST",
        url: "<?php echo plugins_url("/synchronize_api.php", __FILE__);?>",
+       timeout: 5000,
        success: function(data, textSatus, jqXHR){
            jQuery("#console").val(data);
            jQuery("#console").attr("style", "display:block");
-       }
+       },
+       error: function(data, textStatus, errorThrown){
+           if(textStatus == 'timeout'){
+               jQuery("#console").val('timeout');
+               jQuery("#console").attr("style", "display:block");               
+           }
+       }   
        })
     }); 
 </script>

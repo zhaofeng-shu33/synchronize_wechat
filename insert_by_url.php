@@ -37,8 +37,9 @@ function get_html($url, $timeout = 30){
 *		    'postStatus'[choice,default:draft]: article status
 *           'postType'[choice,default:post]: article type
 *		    'keepStyle'[bool,default:false]: whether the css of the article is kept
+*           'keepSource'[bool, default:true]: whether the original source info is kept 
 *	    	'postCate'[choice,default:not_classcified]: the classification to put the article
-*           'downloadImage'[bool,default:false]: whether download image and save a local copy
+*           'setFeatureImage'[bool,default:true]: whether to set the feature image
 *     }
 * \endparblock
 * \return $status
@@ -131,7 +132,7 @@ function ws_insert_by_html($html, $config = Null){
         return array('post_id' => -8, 'err_msg' => $postId->get_error_message());
     }
     $setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
-    return ws_set_image($html, $postId, $setFeaturedImage);
+    return ws_set_image($html, $postId, $config);
 }
 
 //! \brief  get all attached image for $postId and check whether image_name is within it
@@ -249,9 +250,10 @@ function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
 //! \brief  extract image urls from html, and download it to local file system, update image url in postId->postContent
 //! \param  $html: raw html text, $postId: post Id
 //! \return  status = {'post_id':$postId, 'err_msg':$err_msg}
-function ws_set_image($html, $postId, $setFeaturedImage = false){
+function ws_set_image($html, $postId, $config = Null){
     // set featured image
-    if ($setFeaturedImage) {
+    $setFeatureImage = isset($config['setFeatureImage']) ? $config['setFeatureImage'] : true;
+    if ($setFeatureImage) {
         preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
         ws_set_feature_image($postId, $matches[2]);
     }
@@ -273,7 +275,7 @@ function ws_set_image($html, $postId, $setFeaturedImage = false){
         $videoDom->setAttribute('src', $dataSrc);
     }
     // images must be downloaded to local file system
-    return ws_download_image($postId, $dom);
+    return ws_download_image($postId, $dom, $config);
 }
 
 //! \brief insert url list into $wpdb, calling ::ws_insert_by_url
@@ -283,6 +285,7 @@ function ws_insert_by_urls($urls) {
     $postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
                                             $_REQUEST['post_status'] : 'draft';
     $keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
+    $keepSource      = isset($_REQUEST['keep_source']) ? $_REQUEST['keep_source'] == 'keep': true;    
     $postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
     $postCate       = array($postCate);
     $postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
@@ -291,10 +294,11 @@ function ws_insert_by_urls($urls) {
 		'changeAuthor'    => $changeAuthor,
 		'changePostTime'  => $changePostTime,
 		'postStatus'   => $postStatus,
-                'postType' => $postType,
+        'postType' => $postType,
 		'keepStyle'     => $keepStyle,
+        'keepSource' => $keepSource,
 		'postCate' => $postCate,
-                'downloadImage' => true
+        'setFeatureImage' => true
     );
     foreach ($urls as $url) {
         $return_array = ws_insert_by_url($url, $config);
@@ -332,7 +336,7 @@ function ws_resolve_origin($dom){
     return $origin;
 }
 //! \brief download images in $dom, called by ::ws_set_image
-function ws_download_image($postId, $dom, $keepSource = true) {
+function ws_download_image($postId, $dom, $config = Null) {
 	$images            = $dom->find('img');
 	$centeredImage     = get_option('ws_image_centered', 'no') == 'yes';
     foreach ($images as $image) {
@@ -370,6 +374,7 @@ function ws_download_image($postId, $dom, $keepSource = true) {
     $content = preg_replace('/src=\"(http:\/\/read\.html5\.qq\.com)([^\"])*\"/', '', $content);
     $content = preg_replace('/class=\"([^\"])*\"/', '', $content);
     $content = preg_replace('/id=\"([^\"])*\"/', '', $content);
+    $keepSource = isset($config['keepSource']) ? $config['keepSource'] : true;
     if ($keepSource) {
         $source = "<blockquote class='keep-source'>" .
                         "<p>始发于微信公众号：{$origin}</p>" .
