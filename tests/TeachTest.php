@@ -13,6 +13,7 @@ require_once "test_utility.php";
 class TeachTest extends TestCase
 {
     private $webpage_url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
+    private $publish_date = '2018-08-03';
     private $image_url = 'http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg';
     private $image_name = 'mzxl_thu.jpeg';
     private $checksum_image_url = 'http://res.wx.qq.com/mmbizwap/zh_CN/htmledition/images/pic/appmsg/pic_reward_qrcode.2x3534dd.png';
@@ -20,6 +21,11 @@ class TeachTest extends TestCase
     private function get_image()
     {
         return ws_upload_image($this->image_url, 1, $this->image_name);    
+    }
+    public function test_ws_publish_date(){
+        $html = fetch_html($this->html_file_name, $this->webpage_url);
+        $pd = get_publish_date($html);
+        $this->assertTrue(strstr($pd, $this->publish_date)!=Null);
     }
     /**
      * @group local
@@ -39,7 +45,7 @@ class TeachTest extends TestCase
      */
     public function test_ws_insert_by_html_true(){
         $html = fetch_html($this->html_file_name, $this->webpage_url);
-        $return_array = ws_insert_by_html($html);
+        $return_array = ws_insert_by_html($html, array('postStatus' => 'publish'));
         $pid = $return_array['post_id'];
         $this->assertTrue($pid > 0);
     }

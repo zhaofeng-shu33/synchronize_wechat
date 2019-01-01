@@ -45,6 +45,9 @@ function ws_process_request(){
         else{
             $return_array = array('post_id' => -9, 'err_msg' => 'no urls are given');
         }
+        if(isset($_REQUEST['url_id'])){
+            $return_array['url_id'] = $_REQUEST['url_id'];
+        }
     }
     echo json_encode($return_array);
     wp_die();

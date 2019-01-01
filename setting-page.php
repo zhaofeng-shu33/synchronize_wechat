@@ -51,30 +51,71 @@
 </table>
 <?php submit_button("Synchronize"); ?>
 </form>
-<textarea id="console" class="large-text code" rows="2" style="display:none"></textarea>
+<textarea id="console" class="large-text code" rows="1" style="display:none"></textarea>
 <script>
 <?php 
     // https://github.com/jquery-form/form
     wp_enqueue_script( 'jquery-form');
 ?>
+    var submit_multiple = function(url_list){
+        for(var i = 0; i < url_list.length; i++){ 
+            var data_ = {
+                'action': 'ws_process_request',
+                'url_id': i,
+                'given_urls': url_list[i],
+                'keep_source': jQuery('select[name="keep_source"]').val(),
+                'keep_style': jQuery('select[name="keep_style"]').val()
+            };
+            jQuery.ajax({
+             url: ajaxurl,
+             type: "POST",
+             timeout: 50000,
+             data: data_,
+             success: function(data, textStatus, jqXHR){
+                 var console = jQuery("#console");
+                 console.attr("style", "display:block");
+                 var previous_value = console.val();
+                 console.val(previous_value  + data + "\n");
+                 var row = parseInt(console.attr("rows"));
+                 console.attr("rows", row+1);
+             }
+            })   
+        }          
+    }
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
-       jQuery(this).ajaxSubmit({
-       type: "POST",
-       url: ajaxurl,
-       timeout: 35000,
-       data: {'action':'ws_process_request'},
-       success: function(data, textSatus, jqXHR){
-           jQuery("#console").val(data);
-           jQuery("#console").attr("style", "display:block");
-       },
-       error: function(data, textStatus, errorThrown){
-           if(textStatus == 'timeout'){
-               jQuery("#console").val('timeout');
-               jQuery("#console").attr("style", "display:block");               
-           }
-       }   
-       })
+       var url_list_string = jQuery('textarea[name="given_urls"]').val();
+       if(url_list_string.search("\n")>0){
+           submit_multiple(url_list_string.split("\n"));
+       }
+       else{
+            jQuery(this).ajaxSubmit({
+            type: "POST",
+            url: ajaxurl,
+            timeout: 35000,
+            data: {'action':'ws_process_request'},
+            success: function(data, textStatus, jqXHR){
+                var result_array = JSON.parse(data);
+                var console = jQuery("#console");
+                if(result_array.length == undefined){
+                    console.val(data);
+                }
+                else{
+                    console.val("get urls : " + result_array.length + "\n");
+                    console.attr("rows", 2);
+                    // issue new requests for each url in result_array
+                    submit_multiple(result_array);
+                }
+                console.attr("style", "display:block");
+            },
+            error: function(data, textStatus, errorThrown){
+                if(textStatus == 'timeout'){
+                    jQuery("#console").val('timeout');
+                    jQuery("#console").attr("style", "display:block");               
+                }
+            }   
+            })
+       }
     }); 
 </script>
 </div>

@@ -34,7 +34,7 @@ function get_html($url, $timeout = 30){
 *     $config = {
 * 		    'changeAuthor'[bool,default:false]:whether to keep the original author
 *		    'changePostTime'[bool,default:false]: whether to keep the original post time
-*		    'postStatus'[choice,default:draft]: article status
+*		    'postStatus'[choice,default:publish]: article status
 *           'postType'[choice,default:post]: article type
 *		    'keepStyle'[bool,default:false]: whether the css of the article is kept
 *           'keepSource'[bool, default:true]: whether the original source info is kept 
@@ -62,13 +62,14 @@ function ws_insert_by_url($url, $config = Null){
     }
     return ws_insert_by_html($html, $config);
 }
+function get_publish_date($html){
+    preg_match('/(publish_time = ")([^\"]+)"/', $html, $matches);
+    $postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
+    $postDate = date('Y-m-d H:i:s', strtotime($postDate));
+    return $postDate;
+}
 //! \brief insert $wpdb from html, called by ::ws_insert_by_url
 function ws_insert_by_html($html, $config = Null){
-    // whether to remove the original article style
-    $keepStyle = isset($config['keepStyle']) && $config['keepStyle'];
-    if (!$keepStyle) {
-            $html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
-    }
     preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
     // make sure the title of the article exists
     if (count($matches)==0) {
@@ -83,12 +84,16 @@ function ws_insert_by_html($html, $config = Null){
     // publish date
     $changePostTime = isset($config['changePostTime']) && $config['changePostTime'];
     if ($changePostTime) {
-            $postDate = date('Y-m-d H:i:s', current_time('timestamp'));
+        $postDate = date('Y-m-d H:i:s', current_time('timestamp'));
     } else {
-            preg_match('/(publish_time = ")([^\"]+)"/', $html, $matches);
-            $postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
-            $postDate = date('Y-m-d H:i:s', strtotime($postDate));
+        $postDate = get_publish_date($html);
     }
+    // whether to remove the original article style
+    $keepStyle = isset($config['keepStyle']) && $config['keepStyle'];
+    if (!$keepStyle) {
+            $html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
+    }
+    
     // default is draft
     $postStatus = isset($config['postStatus']) && in_array($config['postStatus'], array('publish', 'pending', 'draft')) ?
                                 $config['postStatus'] : 'draft';
@@ -283,7 +288,7 @@ function ws_insert_by_urls($urls) {
     $changeAuthor   = false;
     $changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
     $postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
-                                            $_REQUEST['post_status'] : 'draft';
+                                            $_REQUEST['post_status'] : 'publish';
     $keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
     $keepSource      = isset($_REQUEST['keep_source']) ? $_REQUEST['keep_source'] == 'keep': true;    
     $postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
