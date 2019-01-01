@@ -21,8 +21,19 @@ function check_wx_url($url){
 //! \param  $url
 //! \return  $html raw text, no error handling in this function
 function get_html($url, $timeout = 30){
+    //first check local copy
+    $file_name = __DIR__ . '/asset/' . sha1($url);
+    $html = '';
+    if(file_exists($file_name)){
+        $html = file_get_contents($file_name);
+    }
+    if(strpos($html, 'js_content') > 0 ){
+        return $html;
+    }
     $response = wp_safe_remote_get( $url, array( 'timeout' => $timeout) );    
-    return wp_remote_retrieve_body($response);
+    $html = wp_remote_retrieve_body($response);
+    file_put_contents($file_name, $html);
+    return $html;
 }
 
 /**
