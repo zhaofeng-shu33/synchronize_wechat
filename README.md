@@ -23,10 +23,11 @@ See [wiki](https://github.com/zhaofeng-shu33/wechat_synchronize_to_wordpress/wik
 2. The server can deploy WordPress as developping environment.
 
 Note: The public IP address is used for the whitelist of the wechat public domain. Otherwise, you can not use the wechat api.
-###
+### ToDo List
 
 * Handle video.
 * Handle original author.
+* Wechat url cache.
 ### Playing with the API
 
 After successfully deploying the developping environment, you need to write some simple PHP functions to deal with the wechat api.

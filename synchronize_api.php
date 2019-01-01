@@ -50,7 +50,14 @@ function ws_get_history_url(){
     
     $url_list = array();
     while($offset < $data->news_count){ //
-        list($err, $material) = $api->get_materials('news', $offset, 20);
+        ws_get_history_url_by_offset($url_list, $offset);
+        $offset += 20;
+    }
+    return $url_list;
+}
+
+function ws_get_history_url_by_offset(&$url_list, $offset, $num = 20){
+        list($err, $material) = $api->get_materials('news', $offset, $num);
         // extract urls of each article from $material list and append it to an array
         for($i=0; $i<count($material->item); $i++){ //
             $news_item = $material->item[$i]->content->news_item;
@@ -58,10 +65,6 @@ function ws_get_history_url(){
                 $url = $news_item[$j]->url;
                 array_push($url_list, $url);
             }            
-        }
-        $offset += 20;
-    }
-    return $url_list;
+        }    
 }
-
 ?>

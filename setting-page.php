@@ -93,7 +93,7 @@
             type: "POST",
             url: ajaxurl,
             timeout: 35000,
-            data: {'action':'ws_process_request'},
+            data: {'action':'ws_process_request', 'offset': 0},
             success: function(data, textStatus, jqXHR){
                 var result_array = JSON.parse(data);
                 var console = jQuery("#console");
@@ -104,7 +104,7 @@
                     console.val("get urls : " + result_array.length + "\n");
                     console.attr("rows", 2);
                     // issue new requests for each url in result_array
-                    submit_multiple(result_array);
+                    // submit_multiple(result_array);
                 }
                 console.attr("style", "display:block");
             },
