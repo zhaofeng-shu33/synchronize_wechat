@@ -235,7 +235,7 @@ function ws_upload_image($url, $postId, $image_name = Null){
                 return array('post_id' => $return_obj, 'err_msg' => 'upload successfully');
 	    }
             else{ // upload failed, $return_obj is instance of WP_Error
-                return array('post_id' => -6, 'err_msg' => $return_obj->get_error_message());
+                return array('post_id' => -6, 'err_msg' => $return_obj->get_error_message(), 'err_url' => $url);
             }
         }
         else{ // image already exists
