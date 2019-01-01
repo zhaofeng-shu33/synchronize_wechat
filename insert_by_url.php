@@ -368,7 +368,7 @@ function ws_download_image($postId, $dom, $config = Null) {
         $id = $return_array['post_id'];
         if($id < 0){
             if(isset($_REQUEST['debug']) && $_REQUEST['debug'] == 'on' ){
-                $return_array['article_id'] = $postId;
+                $return_array['article_id'] = $id;
                 return $return_array;    
             }
             else
