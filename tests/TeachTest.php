@@ -6,25 +6,17 @@ define('ABSPATH', getenv("ABSPATH"));
 require_once(ABSPATH . 'wp-config.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
 require_once('insert_by_url.php');
-class WxUrlTest extends TestCase
+
+require_once "test_utility.php";
+
+
+class TeachTest extends TestCase
 {
     private $webpage_url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
     private $image_url = 'http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg';
     private $image_name = 'mzxl_thu.jpeg';
     private $checksum_image_url = 'http://res.wx.qq.com/mmbizwap/zh_CN/htmledition/images/pic/appmsg/pic_reward_qrcode.2x3534dd.png';
-    private function get_html()
-    {
-        $html_file_name = 'teach.txt';
-        if(file_exists($html_file_name)){
-            $html = file_get_contents($html_file_name);
-        }
-        else{
-            //check for right output of function `get_html`
-            $html = get_html($this->webpage_url);
-            file_put_contents($html_file_name, $html);
-        }
-        return $html;
-    }
+    private $html_file_name = 'asset/teach.txt';
     private function get_image()
     {
         return ws_upload_image($this->image_url, 1, $this->image_name);    
@@ -33,7 +25,7 @@ class WxUrlTest extends TestCase
      * @group local
      */
     public function test_ws_insert_by_html_false(){
-        $html = self::get_html();
+        $html = fetch_html($this->html_file_name, $this->webpage_url);
         $html_remove_title = str_replace('msg_title', 'title_msg', $html);
         $return_array = ws_insert_by_html($html_remove_title);
         $this->assertSame($return_array['post_id'], -3);
@@ -46,7 +38,7 @@ class WxUrlTest extends TestCase
      * @group local
      */
     public function test_ws_insert_by_html_true(){
-        $html = self::get_html();
+        $html = fetch_html($this->html_file_name, $this->webpage_url);
         $return_array = ws_insert_by_html($html);
         $pid = $return_array['post_id'];
         $this->assertTrue($pid > 0);
@@ -73,9 +65,8 @@ class WxUrlTest extends TestCase
     }
     public function test_ws_insert_by_url_true()
     {
-        $return_array = ws_insert_by_url($this->webpage_url);        
+        $return_array = ws_insert_by_url($this->webpage_url);   
         $this->assertTrue($return_array['post_id'] > 0);
-
     }
     /**
      * @group network
@@ -129,7 +120,7 @@ class WxUrlTest extends TestCase
     }
     public function test_ws_downloadImage()
     {
-        $html = $this->get_html();
+        $html = fetch_html($this->html_file_name, $this->webpage_url);
         $return_array = ws_insert_by_html($html);
         $this->assertTrue($return_array['post_id'] > 0);
 

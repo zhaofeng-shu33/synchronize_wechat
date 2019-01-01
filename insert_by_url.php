@@ -58,19 +58,19 @@ function get_html($url, $timeout = 30){
 * \endparblock
 */
 function ws_insert_by_url($url, $config = Null){
-	    $url = check_wx_url($url);
-		if (!$url) {
-			return array('post_id' => -1, 'err_msg' => 'url does not contain mp.weixin.qq.com');
-		}
-        $html = get_html($url);
-		if (!$html) {
-            return array('post_id' => -2, 'err_msg' => 'cannot get any message from '. $url);
-		}
-        return ws_insert_by_html($html, $config);
+    $url = check_wx_url($url);
+    if (!$url) {
+            return array('post_id' => -1, 'err_msg' => 'url does not contain mp.weixin.qq.com');
+    }
+    $html = get_html($url);
+    if (!$html) {
+        return array('post_id' => -2, 'err_msg' => 'cannot get any message from '. $url);
+    }
+    return ws_insert_by_html($html, $config);
 }
 //! \brief insert $wpdb from html, called by ::ws_insert_by_url
 function ws_insert_by_html($html, $config = Null){
-		// whether to remove the original article style
+	// whether to remove the original article style
         $keepStyle = isset($config['keepStyle']) && $config['keepStyle'];
 		if (!$keepStyle) {
 			$html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
@@ -317,37 +317,8 @@ function ws_insert_by_urls($urls) {
     }
     return $return_array;
 }
-//! \brief download images in $dom, called by ::ws_set_image
-function ws_download_image($postId, $dom, $keepSource = true) {
-	$images            = $dom->find('img');
-	$centeredImage     = get_option('ws_image_centered', 'no') == 'yes';
-	foreach ($images as $image) {
-		$src  = $image->getAttribute('src');
-		if (!$src) {
-			continue;
-		}
-		if (strstr($src, 'res.wx.qq.com')) {
-			continue;
-		}
-		if ($centeredImage) {
-    		$class = $image->getAttribute('class');
-			$class .= ' aligncenter';
-			$image->setAttribute('class', $class);
-		}
-		$src = preg_replace('/^\/\//', 'http://', $src, 1);
-        $return_array = ws_upload_image($src, $postId);
-    	$id = $return_array['post_id'];
-        if($id < 0){
-            return $return_array;    
-        }
-        else { // amend the url
-			$imageInfo = wp_get_attachment_image_src($id, 'full');
-			$src       = $imageInfo[0];
-			$image->setAttribute('src', $src);
-		}
-	}
-    // resolve css background images
-    $content = $dom->find('#js_content', 0)->innertext;
+//! \brief resolve css background images, called by ::ws_download_image
+function ws_resolve_bg_image(&$content, $postId){
     $re = '/background-image: url\(&quot;([^\']+)&quot;\)/';
     preg_match($re, $content, $matches);
     #echo $content;
@@ -363,15 +334,53 @@ function ws_download_image($postId, $dom, $keepSource = true) {
         $matches = array();
         preg_match($re, $content, $matches);
     }
-    $content = str_replace('&qquot;', '&quot;', $content);
-	$userName = $dom->find('#profileBt a', 0);
-     if($userName){
-      $userName = $userName->plaintext;
-     }
-     else{ // handle republish
-         $userName = $dom->find('.original_account_nickname', 0)->plaintext;
-     }
-	$userName = esc_html($userName);    
+    $content = str_replace('&qquot;', '&quot;', $content);    
+}
+//! \brief resolve article origin, called by ::ws_download_image
+function ws_resolve_origin($dom){
+    $origin = $dom->find('#profileBt a', 0);
+    if($origin){
+        $origin = $origin->plaintext;
+    }
+    else{ // handle republish
+         $origin = $dom->find('.original_account_nickname', 0)->plaintext;
+    }
+    $origin = trim(esc_html($origin));
+    return $origin;
+}
+//! \brief download images in $dom, called by ::ws_set_image
+function ws_download_image($postId, $dom, $keepSource = true) {
+	$images            = $dom->find('img');
+	$centeredImage     = get_option('ws_image_centered', 'no') == 'yes';
+	foreach ($images as $image) {
+            $src  = $image->getAttribute('src');
+            if (!$src) {
+                    continue;
+            }
+            if (strstr($src, 'res.wx.qq.com')) {
+                    continue;
+            }
+            if ($centeredImage) {
+            $class = $image->getAttribute('class');
+                    $class .= ' aligncenter';
+                    $image->setAttribute('class', $class);
+            }
+            $src = preg_replace('/^\/\//', 'http://', $src, 1);
+            $return_array = ws_upload_image($src, $postId);
+            $id = $return_array['post_id'];
+            if($id < 0){
+                return $return_array;    
+            }
+            else { // amend the url
+                $imageInfo = wp_get_attachment_image_src($id, 'full');
+                $src       = $imageInfo[0];
+                $image->setAttribute('src', $src);
+            }
+	}
+    // resolve css background images
+    $content = $dom->find('#js_content', 0)->innertext;
+    ws_resolve_bg_image($content, $postId);
+    $origin = ws_resolve_origin($dom);
 
     // clean up the javascript    
     $content = preg_replace('/data\-([a-zA-Z0-9\-])+\=\"[^\"]*\"/', '', $content);
@@ -380,7 +389,7 @@ function ws_download_image($postId, $dom, $keepSource = true) {
     $content = preg_replace('/id=\"([^\"])*\"/', '', $content);
     if ($keepSource) {
         $source = "<blockquote class='keep-source'>" .
-                        "<p>始发于微信公众号：{$userName}</p>" .
+                        "<p>始发于微信公众号：{$origin}</p>" .
                         "</blockquote>";
         $content .= $source;
     }
