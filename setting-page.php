@@ -133,7 +133,7 @@
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
        var url_list_string = jQuery('textarea[name="given_urls"]').val();
-       console.attr("style", "display:block");
+       jQuery("#console").attr("style", "display:block");
        if(url_list_string.length>0){
            url_list = url_list_string.split("\n");
            submit_multiple();
