@@ -222,7 +222,7 @@ function ws_upload_image($url, $postId, $image_name = Null){
         }
         return $return_array;
     }
-	$tmpFile = download_url($url);
+	$tmpFile = download_url($url, 10);
 	if (is_string($tmpFile)) {
 		$fileArr  = array(
 			'name'     => $fileName,
