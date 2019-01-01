@@ -244,7 +244,7 @@ function ws_upload_image($url, $postId, $image_name = Null){
         }
 	}
     else{
-        return array('post_id' => -5, 'err_msg' => 'download feature image failed');
+        return array('post_id' => -5, 'err_msg' => 'download image failed');
     }
 }
 //! \brief: set the thumbnail image for the specified post, called by ::ws_set_image
@@ -279,14 +279,12 @@ function ws_set_image($html, $postId, $config = Null){
     // process images(tested)
     $dom  = str_get_html($html);
     $imageDoms = $dom->find('img');
-    $sprindboard = 'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
     foreach ($imageDoms as $imageDom) {
         $dataSrc = $imageDom->getAttribute('data-src');
         if (!$dataSrc) {
             continue;
         }
-        $src  = $sprindboard . $dataSrc;
-        $imageDom->setAttribute('src', $src);
+        $imageDom->setAttribute('src', $dataSrc);
     }
     // video cannot simply be done, tencent video api has not been documented
     // this feature is not implemented.

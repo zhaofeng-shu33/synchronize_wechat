@@ -101,7 +101,11 @@
          data: data_,
          success: function(data, textStatus, jqXHR){
              var previous_value = console.val();
-             console.val(previous_value  + data + "\n");
+             var data_json = JSON.parse(data);
+             var extra_info = '';
+             if(data_json['post_id'] < 0)
+                extra_info = '*' + url;
+             console.val(previous_value  + data + extra_info + "\n");
              var row = parseInt(console.attr("rows"));
              console.attr("rows", row+1);
              var new_url = url_list.pop();
