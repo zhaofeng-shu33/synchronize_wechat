@@ -57,36 +57,49 @@
     // https://github.com/jquery-form/form
     wp_enqueue_script( 'jquery-form');
 ?>
-    var submit_multiple = function(url_list){
-        for(var i = 0; i < url_list.length; i++){ 
-            var data_ = {
-                'action': 'ws_process_request',
-                'url_id': i,
-                'given_urls': url_list[i],
-                'keep_source': jQuery('select[name="keep_source"]').val(),
-                'keep_style': jQuery('select[name="keep_style"]').val()
-            };
-            jQuery.ajax({
-             url: ajaxurl,
-             type: "POST",
-             timeout: 50000,
-             data: data_,
-             success: function(data, textStatus, jqXHR){
-                 var console = jQuery("#console");
-                 console.attr("style", "display:block");
-                 var previous_value = console.val();
-                 console.val(previous_value  + data + "\n");
-                 var row = parseInt(console.attr("rows"));
-                 console.attr("rows", row+1);
+    var url_list = [];
+    var url_global_id = 0;
+    var submit_single = function(url){
+        var data_ = {
+            'action': 'ws_process_request',
+            'url_id': url_global_id,
+            'given_urls': url,
+            'keep_source': jQuery('select[name="keep_source"]').val(),
+            'keep_style': jQuery('select[name="keep_style"]').val()
+        };
+        url_global_id += 1;
+        jQuery.ajax({
+         url: ajaxurl,
+         type: "POST",
+         timeout: 50000,
+         data: data_,
+         success: function(data, textStatus, jqXHR){
+             var console = jQuery("#console");
+             console.attr("style", "display:block");
+             var previous_value = console.val();
+             console.val(previous_value  + data + "\n");
+             var row = parseInt(console.attr("rows"));
+             console.attr("rows", row+1);
+             var new_url = url_list.pop();
+             if(new_url != undefined){
+                 submit_single(new_url);
              }
-            })   
+         }
+        })        
+    }
+    var submit_multiple = function(){
+        var submitted_length = url_list.length;
+        for(var i = 0; i < Math.min(5, submitted_length); i++){ 
+            var url = url_list.pop();
+            submit_single(url);
         }          
     }
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
        var url_list_string = jQuery('textarea[name="given_urls"]').val();
        if(url_list_string.search("\n")>0){
-           submit_multiple(url_list_string.split("\n"));
+           url_list = url_list_string.split("\n");
+           submit_multiple();
        }
        else{
             jQuery(this).ajaxSubmit({
