@@ -115,7 +115,7 @@
          },
         error: function(jqXHR, textStatus, errorThrown){
             var previous_value = console.val();                    
-            console.val(previoust_value + textStatus + '*'+ errorThrown + '*' + url + "\n");
+            console.val(previous_value + textStatus + '*'+ errorThrown + '*' + url + "\n");
         }           
         })        
     }
