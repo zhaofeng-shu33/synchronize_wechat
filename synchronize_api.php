@@ -71,7 +71,7 @@ function ws_get_history_url(){
 
 function ws_process_request(){
     // if no post data, return 
-    $sync_history = isset($_REQUEST['ws_history']) ? $_REQUEST['ws_history']=='ws_Yes' : false;
+    $sync_history = isset($_REQUEST['ws_history']) ? $_REQUEST['ws_history'] == 'ws_Yes' : false;
     if($sync_history){
             $return_array = ws_get_history_url();
     }

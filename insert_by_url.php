@@ -70,81 +70,75 @@ function ws_insert_by_url($url, $config = Null){
 }
 //! \brief insert $wpdb from html, called by ::ws_insert_by_url
 function ws_insert_by_html($html, $config = Null){
-	// whether to remove the original article style
-        $keepStyle = isset($config['keepStyle']) && $config['keepStyle'];
-		if (!$keepStyle) {
-			$html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
-		}
-		preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
-        // make sure the title of the article exists
-		if (count($matches)==0) {
-			return array('post_id' => -3, 'err_msg' => 'cannot get title from html');
-		}
-		$title = trim($matches[2]);
-		// check whether the title is duplicate. If duplicate, return
-        $post_id = post_exists($title);
-		if ($post_id != 0) {
-			return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
-		}
-
-		// publish date
-        $changePostTime = isset($config['changePostTime']) && $config['changePostTime'];
-		if ($changePostTime) {
-			$postDate = date('Y-m-d H:i:s', current_time('timestamp'));
-		} else {
-			preg_match('/(publish_time = ")([^\"]+)"/', $html, $matches);
-			$postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
-			$postDate = date('Y-m-d H:i:s', strtotime($postDate));
-		}
-    	// default is draft
-	    $postStatus = isset($config['postStatus']) && in_array($config['postStatus'], array('publish', 'pending', 'draft')) ?
-					$config['postStatus'] : 'draft';
-
-	    // article type, default is post
-	    $postType       = isset($config['postType']) ? $config['postType'] : 'post';
-
-		// whether to change author，not implemented yet
-        $changeAuthor   = isset($config['changeAuthor']) && $config['changeAuthor'];
-		if ($changeAuthor){
-			// create new user.. todo
-		} else {
-			// author of wordpress blog 
-			$userId = get_current_user_id();
-		}
-	    // article category, default is Uncategorized
-		$cates = isset($config['postCate'])? $config['postCate'] : ''; 	
-		if ($cates) {
-			$cateIds = array();
-			foreach ($cates as $cate) {
-				$term = get_term_by('name', $cate, 'category');
-				if ($term) {
-					$cateIds[] = $term->term_id;
-				} else {
-				}
-			}
-			$postCate = $cateIds;
-		}
-        else{
-	        $postCate       = array(1);        
+    // whether to remove the original article style
+    $keepStyle = isset($config['keepStyle']) && $config['keepStyle'];
+    if (!$keepStyle) {
+            $html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
+    }
+    preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
+    // make sure the title of the article exists
+    if (count($matches)==0) {
+        return array('post_id' => -3, 'err_msg' => 'cannot get title from html');
+    }
+    $title = trim($matches[2]);
+    // check whether the title is duplicate. If duplicate, return
+    $post_id = post_exists($title);
+    if ($post_id != 0) {
+        return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
+    }
+    // publish date
+    $changePostTime = isset($config['changePostTime']) && $config['changePostTime'];
+    if ($changePostTime) {
+            $postDate = date('Y-m-d H:i:s', current_time('timestamp'));
+    } else {
+            preg_match('/(publish_time = ")([^\"]+)"/', $html, $matches);
+            $postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
+            $postDate = date('Y-m-d H:i:s', strtotime($postDate));
+    }
+    // default is draft
+    $postStatus = isset($config['postStatus']) && in_array($config['postStatus'], array('publish', 'pending', 'draft')) ?
+                                $config['postStatus'] : 'draft';
+    // article type, default is post
+    $postType       = isset($config['postType']) ? $config['postType'] : 'post';
+    // whether to change author, not implemented yet
+    $changeAuthor   = isset($config['changeAuthor']) && $config['changeAuthor'];
+    if ($changeAuthor){
+        // todo
+    } else {
+        $userId = get_current_user_id();
+    }
+    // article category, default is Uncategorized
+    $cates = isset($config['postCate'])? $config['postCate'] : ''; 	
+    if ($cates) {
+        $cateIds = array();
+        foreach ($cates as $cate) {
+                $term = get_term_by('name', $cate, 'category');
+                if ($term) {
+                        $cateIds[] = $term->term_id;
+                } else {
+                }
         }
-
-		$post = array(
-			'post_title'    => $title,
-			'post_content'  => '',
-			'post_status'   => $postStatus,
-			'post_date'     => $postDate,
-			'post_modified' => $postDate,
-			'post_author'   => $userId,
-			'post_category' => $postCate,
-			'post_type'	    => $postType
-		);
-        $postId         = null;
-		$postId = wp_insert_post($post);
-        if(is_wp_error($postId)){
-            return array('post_id' => -8, 'err_msg' => $postId->get_error_message());
-        }
-        $setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
-        return ws_set_image($html, $postId, $setFeaturedImage);
+        $postCate = $cateIds;
+}
+    else{
+        $postCate = array(1);        
+    }
+    $post = array(
+            'post_title'    => $title,
+            'post_content'  => '',
+            'post_status'   => $postStatus,
+            'post_date'     => $postDate,
+            'post_modified' => $postDate,
+            'post_author'   => $userId,
+            'post_category' => $postCate,
+            'post_type'	    => $postType
+    );
+    $postId = wp_insert_post($post);
+    if(is_wp_error($postId)){
+        return array('post_id' => -8, 'err_msg' => $postId->get_error_message());
+    }
+    $setFeaturedImage  = get_option('ws_featured_image', 'yes') == 'yes';
+    return ws_set_image($html, $postId, $setFeaturedImage);
 }
 
 //! \brief  get all attached image for $postId and check whether image_name is within it
@@ -166,7 +160,6 @@ function ws_check_image_exists($postId, $image_name){
             return array('post_id' => $attached_image_id, 'err_msg' => 'image already exists');
         }
 	}
-
     return array('post_id' => 0, 'err_msg' => '');
 }
 
@@ -264,30 +257,30 @@ function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
 //! \param  $html: raw html text, $postId: post Id
 //! \return  status = {'post_id':$postId, 'err_msg':$err_msg}
 function ws_set_image($html, $postId, $setFeaturedImage = false){
-    	// set featured image
-		if ($setFeaturedImage) {
-			preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
-            ws_set_feature_image($postId, $matches[2]);
-		}
-		// process images(tested) and video(not tested)
-        $dom  = str_get_html($html);
-		$imageDoms = $dom->find('img');
-		$videoDoms = $dom->find('.video_iframe');
-        $sprindboard = 'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
-		foreach ($imageDoms as $imageDom) {
-			$dataSrc = $imageDom->getAttribute('data-src');
-			if (!$dataSrc) {
-				continue;
-			}
-			$src  = $sprindboard . $dataSrc;
-			$imageDom->setAttribute('src', $src);
-		}
-		foreach ($videoDoms as $videoDom) {
-			$dataSrc = $videoDom->getAttribute('data-src');
-			$videoDom->setAttribute('src', $dataSrc);
-		}
-		// images must be downloaded to local file system
-		return ws_download_image($postId, $dom);
+    // set featured image
+    if ($setFeaturedImage) {
+        preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
+        ws_set_feature_image($postId, $matches[2]);
+    }
+    // process images(tested) and video(not tested)
+    $dom  = str_get_html($html);
+    $imageDoms = $dom->find('img');
+    $videoDoms = $dom->find('.video_iframe');
+    $sprindboard = 'http://read.html5.qq.com/image?src=forum&q=4&r=0&imgflag=7&imageUrl=';
+    foreach ($imageDoms as $imageDom) {
+        $dataSrc = $imageDom->getAttribute('data-src');
+        if (!$dataSrc) {
+            continue;
+        }
+        $src  = $sprindboard . $dataSrc;
+        $imageDom->setAttribute('src', $src);
+    }
+    foreach ($videoDoms as $videoDom) {
+        $dataSrc = $videoDom->getAttribute('data-src');
+        $videoDom->setAttribute('src', $dataSrc);
+    }
+    // images must be downloaded to local file system
+    return ws_download_image($postId, $dom);
 }
 
 //! \brief insert url list into $wpdb, calling ::ws_insert_by_url
@@ -295,7 +288,7 @@ function ws_insert_by_urls($urls) {
     $changeAuthor   = false;
     $changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
     $postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
-                                            $_REQUEST['post_status'] : 'publish';
+                                            $_REQUEST['post_status'] : 'draft';
     $keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
     $postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
     $postCate       = array($postCate);
@@ -319,15 +312,12 @@ function ws_insert_by_urls($urls) {
 }
 //! \brief resolve css background images, called by ::ws_download_image
 function ws_resolve_bg_image(&$content, $postId){
-    $re = '/background-image: url\(&quot;([^\']+)&quot;\)/';
+    $re = '/background-image: url\(&quot;([^&]+)&quot;\)/';
     preg_match($re, $content, $matches);
-    #echo $content;
     while(count($matches)==2){
         $image_url = $matches[1];
         $return_array = ws_upload_image($image_url, $postId);
         $id = $return_array['post_id'];
-        if($id < 0)
-            echo $return_array;
         $imageInfo = wp_get_attachment_image_src($id, 'full');
         $src       = $imageInfo[0];   
         $content = preg_replace($re, 'background-image: url(&qquot;'. $src . '&qquot;)', $content, 1);
@@ -352,37 +342,37 @@ function ws_resolve_origin($dom){
 function ws_download_image($postId, $dom, $keepSource = true) {
 	$images            = $dom->find('img');
 	$centeredImage     = get_option('ws_image_centered', 'no') == 'yes';
-	foreach ($images as $image) {
-            $src  = $image->getAttribute('src');
-            if (!$src) {
-                    continue;
-            }
-            if (strstr($src, 'res.wx.qq.com')) {
-                    continue;
-            }
-            if ($centeredImage) {
-            $class = $image->getAttribute('class');
-                    $class .= ' aligncenter';
-                    $image->setAttribute('class', $class);
-            }
-            $src = preg_replace('/^\/\//', 'http://', $src, 1);
-            $return_array = ws_upload_image($src, $postId);
-            $id = $return_array['post_id'];
-            if($id < 0){
-                return $return_array;    
-            }
-            else { // amend the url
-                $imageInfo = wp_get_attachment_image_src($id, 'full');
-                $src       = $imageInfo[0];
-                $image->setAttribute('src', $src);
-            }
-	}
+    foreach ($images as $image) {
+        $src  = $image->getAttribute('src');
+        if (!$src) {
+                continue;
+        }
+        if (strstr($src, 'res.wx.qq.com')) {
+                continue;
+        }
+        if ($centeredImage) {
+        $class = $image->getAttribute('class');
+                $class .= ' aligncenter';
+                $image->setAttribute('class', $class);
+        }
+        $src = preg_replace('/^\/\//', 'http://', $src, 1);
+        $return_array = ws_upload_image($src, $postId);
+        $id = $return_array['post_id'];
+        if($id < 0){
+            return $return_array;    
+        }
+        else { // amend the url
+            $imageInfo = wp_get_attachment_image_src($id, 'full');
+            $src       = $imageInfo[0];
+            $image->setAttribute('src', $src);
+        }
+    }
     // resolve css background images
     $content = $dom->find('#js_content', 0)->innertext;
     ws_resolve_bg_image($content, $postId);
     $origin = ws_resolve_origin($dom);
 
-    // clean up the javascript    
+    // clean up the javascript
     $content = preg_replace('/data\-([a-zA-Z0-9\-])+\=\"[^\"]*\"/', '', $content);
     $content = preg_replace('/src=\"(http:\/\/read\.html5\.qq\.com)([^\"])*\"/', '', $content);
     $content = preg_replace('/class=\"([^\"])*\"/', '', $content);
