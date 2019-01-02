@@ -180,7 +180,7 @@ function ws_check_image_exists($postId, $image_name){
 //! \param  $url: image url
 //! \return  extension name with the dot
 function _get_image_extension_from_url($url){
-  $extension = strstr(basename(explode('?', $url)[0], '.'));
+  $extension = strstr(basename(explode('?', $url)[0]), '.');
   if($extension == false){
       preg_match('/wx_fmt=([a-z]+)/', $url, $matches);
       if(count($matches)==2)
