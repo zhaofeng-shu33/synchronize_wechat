@@ -42,7 +42,7 @@ function ws_get_history_url(){
         )
     );
     list($err, $data) = $api->get_material_count();
-    // each time maximal 20 articles fetch is allowed
+    // each time maximal 20 news collection fetch is allowed
     if($err){
         return array('post_id' => -1*$err->errcode, 'err_msg' => $err->errmsg);
     }

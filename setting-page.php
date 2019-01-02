@@ -75,10 +75,6 @@
 </form>
 <textarea id="console" class="large-text code" rows="1" style="display:none"></textarea>
 <script>
-<?php 
-    // https://github.com/jquery-form/form
-    wp_enqueue_script( 'jquery-form');
-?>
     var url_list = [];
     var url_global_id = 0;
     var global_offset = 0;

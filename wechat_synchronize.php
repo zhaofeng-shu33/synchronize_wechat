@@ -20,7 +20,6 @@ if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
 }
 function ws_admin_menu(){
-    //add_options_page( $page_title, $menu_title, $capability, $menu_slug, $function);
     add_options_page('ws options', 'ws', 'manage_options', 'ws-unique-identifier', 'ws_plugin_options');
     add_action('admin_init', 'register_ws_settings');
 }
@@ -36,7 +35,6 @@ function ws_plugin_options(){
 
 
 function ws_process_request(){
-    // if no post data, return 
     $sync_history = isset($_REQUEST['ws_history']) ? $_REQUEST['ws_history'] == 'ws_Yes' : false;
     if($sync_history){
         if(isset($_REQUEST['offset'])){
@@ -52,7 +50,6 @@ function ws_process_request(){
         $urls_str = isset($_REQUEST['given_urls']) ? $_REQUEST['given_urls'] : '';
         if($urls_str != ''){
             $url_list = explode("\n", $urls_str);
-            // file_put_contents($file, '');                    
             $return_array = ws_insert_by_urls($url_list);
         }
         else{
