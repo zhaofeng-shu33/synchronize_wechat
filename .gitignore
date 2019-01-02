@@ -1,4 +1,6 @@
 .vs/*
+asset/*
+!asset/README.md
 doc/*
 test2.php
 build/*
