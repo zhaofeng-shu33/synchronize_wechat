@@ -3,7 +3,7 @@
  * @package wechat_synchronize_api
  * @file synchronize_api.php
  */
-
+if ( ! defined( 'ABSPATH' ) ) exit;
 require "wechat-php-sdk/autoload.php";
 use Gaoming13\WechatPhpSdk;
 use Gaoming13\WechatPhpSdk\Api;

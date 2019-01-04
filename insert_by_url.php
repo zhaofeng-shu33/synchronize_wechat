@@ -1,15 +1,15 @@
 <?php
 /**
- * @version 1.0
  * \file insert_by_url.php
  */
+if ( ! defined( 'ABSPATH' ) ) exit;
 if(!class_exists('simple_html_dom_node')){
 	require_once("php-simple-html-dom/simple_html_dom.php");
 }
 //! \brief  check the domain name
 //! \param  $url
 //! \return  trimed $url if $url contains the domain name of wx; otherwise, empty string is returned
-function check_wx_url($url){
+function ws_check_wx_url($url){
     if (strpos($url, 'http://mp.weixin.qq.com/s') !== false || strpos($url, 'https://mp.weixin.qq.com/s') !== false) {
         $url = str_replace('http://', 'https://', $url);
 	    return trim($url);
@@ -20,7 +20,7 @@ function check_wx_url($url){
 //! \brief  get the html from url
 //! \param  $url
 //! \return  $html raw text, no error handling in this function
-function get_html($url, $timeout = 30){
+function ws_get_html($url, $timeout = 30){
     //first check local copy
     $file_name = __DIR__ . '/asset/' . sha1($url);
     $html = '';
@@ -63,17 +63,17 @@ function get_html($url, $timeout = 30){
 * \endparblock
 */
 function ws_insert_by_url($url, $config = Null){
-    $url = check_wx_url($url);
+    $url = ws_check_wx_url($url);
     if (!$url) {
             return array('post_id' => -1, 'err_msg' => 'url does not contain mp.weixin.qq.com');
     }
-    $html = get_html($url);
+    $html = ws_get_html($url);
     if (!$html) {
         return array('post_id' => -2, 'err_msg' => 'cannot get any message from '. $url);
     }
     return ws_insert_by_html($html, $config);
 }
-function get_publish_date($html){
+function ws_get_publish_date($html){
     preg_match('/(publish_time = ")([^\"]+)"/', $html, $matches);
     $postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
     $postDate = date('Y-m-d H:i:s', strtotime($postDate));
@@ -101,7 +101,7 @@ function ws_insert_by_html($html, $config = Null){
     if ($changePostTime) {
         $postDate = date('Y-m-d H:i:s', current_time('timestamp'));
     } else {
-        $postDate = get_publish_date($html);
+        $postDate = ws_get_publish_date($html);
     }
     // whether to remove the original article style
     $keepStyle = isset($config['keepStyle']) && $config['keepStyle'];
@@ -179,7 +179,7 @@ function ws_check_image_exists($postId, $image_name){
 //! \brief  guess the image extension from the url
 //! \param  $url: image url
 //! \return  extension name with the dot
-function _get_image_extension_from_url($url){
+function _ws_get_image_extension_from_url($url){
   $extension = strstr(basename(explode('?', $url)[0]), '.');
   if($extension == false){
       preg_match('/wx_fmt=([a-z]+)/', $url, $matches);
@@ -193,9 +193,9 @@ function _get_image_extension_from_url($url){
 //! \param  $url: absolute url of the image file
 //! \param  $prefix: prefix to prepend before the image name
 //! \return  image file name, no error handling.
-function _get_image_name($url, $prefix, $extension_=Null){
+function _ws_get_image_name($url, $prefix, $extension_=Null){
     $check_sum = sha1($url);
-    $extension = _get_image_extension_from_url($url);
+    $extension = _ws_get_image_extension_from_url($url);
     if($extension == false)
         $extension = '.jpeg';
 	$fileName = $prefix  . $check_sum . $extension;
@@ -209,7 +209,7 @@ function _get_image_name($url, $prefix, $extension_=Null){
 function ws_upload_image($url, $postId, $image_name = Null){
     if($image_name == Null){
 		$prefixName = get_option('ws_image_name_prefix', 'ws-plugin-');
-        $fileName = _get_image_name($url, $prefixName);
+        $fileName = _ws_get_image_name($url, $prefixName);
     }
     else{
         $fileName = $image_name;
@@ -277,7 +277,7 @@ function ws_set_image($html, $postId, $config = Null){
         ws_set_feature_image($postId, $matches[2]);
     }
     // process images(tested)
-    $dom  = str_get_html($html);
+    $dom  = ws_get_html($html);
     $imageDoms = $dom->find('img');
     foreach ($imageDoms as $imageDom) {
         $dataSrc = $imageDom->getAttribute('data-src');

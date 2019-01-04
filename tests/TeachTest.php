@@ -24,7 +24,7 @@ class TeachTest extends TestCase
     }
     public function test_ws_publish_date(){
         $html = fetch_html($this->html_file_name, $this->webpage_url);
-        $pd = get_publish_date($html);
+        $pd = ws_get_publish_date($html);
         $this->assertTrue(strstr($pd, $this->publish_date)!=Null);
     }
     /**
@@ -54,8 +54,8 @@ class TeachTest extends TestCase
      */
     public function test_check_wx_url()
     {
-        $this->assertSame(check_wx_url($this->webpage_url), $this->webpage_url);
-        $this->assertSame(check_wx_url('http://baidu.com'),"");
+        $this->assertSame(ws_check_wx_url($this->webpage_url), $this->webpage_url);
+        $this->assertSame(ws_check_wx_url('http://baidu.com'),"");
     }
 
     /**
@@ -100,10 +100,10 @@ class TeachTest extends TestCase
         $this->assertSame($return_array['err_msg'], 'image already exists');
 
     }
-    public function test_ws_get_image_name()
+    public function test_ws_ws_get_image_name()
     {
         // use this file for testing
-        $image_name = _get_image_name($this->image_url, '');
+        $image_name = _ws_get_image_name($this->image_url, '');
         $this->assertSame($image_name,'85463a5165d4e4bb33579bff7cf005b162ec8ac0.jpeg');
     }
     /**

@@ -1,3 +1,6 @@
+<?php
+if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
+?>
 <div>
 <h1> Wechat synchronization </h1>
 <form method="post" action="options.php">
@@ -75,64 +78,64 @@
 </form>
 <textarea id="console" class="large-text code" rows="1" style="display:none"></textarea>
 <script>
-    var url_list = [];
-    var url_global_id = 0;
-    var global_offset = 0;
-    var get_news_termination = false;
-    var console = jQuery("#console");
-    var submit_single = function(url){
+    var ws_url_list = [];
+    var ws_url_global_id = 0;
+    var ws_global_offset = 0;
+    var ws_get_news_termination = false;
+    var ws_console = jQuery("#console");
+    var ws_submit_single = function(url){
         var data_ = {
             'action': 'ws_process_request',
-            'url_id': url_global_id,
+            'url_id': ws_url_global_id,
             'given_urls': url,
             'keep_source': jQuery('select[name="keep_source"]').val(),
             'keep_style': jQuery('select[name="keep_style"]').val(),
             'debug': jQuery('select[name="debug"]').val()
         };
-        url_global_id += 1;
+        ws_url_global_id += 1;
         jQuery.ajax({
          url: ajaxurl,
          type: "POST",
          timeout: 50000,
          data: data_,
          success: function(data, textStatus, jqXHR){
-             var previous_value = console.val();
+             var previous_value = ws_console.val();
              var data_json = JSON.parse(data);
              var extra_info = '';
              if(data_json['post_id'] < 0)
                 extra_info = '*' + url;
-             console.val(previous_value  + data + extra_info + "\n");
-             var row = parseInt(console.attr("rows"));
-             console.attr("rows", row+1);
-             var new_url = url_list.pop();
+             ws_console.val(previous_value  + data + extra_info + "\n");
+             var row = parseInt(ws_console.attr("rows"));
+             ws_console.attr("rows", row+1);
+             var new_url = ws_url_list.pop();
              if(new_url != undefined){
-                 submit_single(new_url);
+                 ws_submit_single(new_url);
              }
              else{
-                if(jQuery('select[name="ws_history"]').val() == 'ws_Yes' && get_news_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
-                    get_news();
+                if(jQuery('select[name="ws_history"]').val() == 'ws_Yes' && ws_get_news_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
+                    ws_get_news();
              }
          },
         error: function(jqXHR, textStatus, errorThrown){
-            var previous_value = console.val();                    
-            console.val(previous_value + textStatus + '*'+ errorThrown + '*' + url + "\n");
+            var previous_value = ws_console.val();                    
+            ws_console.val(previous_value + textStatus + '*'+ errorThrown + '*' + url + "\n");
         }           
         })        
     }
     var submit_multiple = function(){
-        var submitted_length = url_list.length;
+        var submitted_length = ws_url_list.length;
         for(var i = 0; i < Math.min(5, submitted_length); i++){ 
-            var url = url_list.pop();
-            submit_single(url);
+            var url = ws_url_list.pop();
+            ws_submit_single(url);
         }          
     }
-    var get_news = function(){
+    var ws_get_news = function(){
         var data_to_sent = 
                    {'action':'ws_process_request',
-                    'offset': global_offset,
+                    'offset': ws_global_offset,
                     'ws_history':jQuery('select[name="ws_history"]').val()
                    };
-        global_offset += 20;           
+        ws_global_offset += 20;           
         jQuery.ajax({
             type: "POST",
             url: ajaxurl,
@@ -140,34 +143,34 @@
             data: data_to_sent,
             success: function(data, textStatus, jqXHR){
                 var result_array = JSON.parse(data);
-                var previous_value = console.val();
-                console.val(previous_value + "get urls : " + result_array.length + "\n");
-                var row = parseInt(console.attr("rows"));
-                console.attr("rows", row+1);
+                var previous_value = ws_console.val();
+                ws_console.val(previous_value + "get urls : " + result_array.length + "\n");
+                var row = parseInt(ws_console.attr("rows"));
+                ws_console.attr("rows", row+1);
                 // issue new requests for each url in result_array
                 if(result_array.length == 0)
-                    get_news_termination = true;
+                    ws_get_news_termination = true;
                 else{
-                    url_list = url_list.concat(result_array);
+                    ws_url_list = ws_url_list.concat(result_array);
                     submit_multiple();                    
                 }                
             },
             error: function(jqXHR, textStatus, errorThrown){
-                var previous_value = console.val();                    
-                console.val(previous_value + textStatus + '*' + errorThrown + '*' + (global_offset - 20) + "\n");
+                var previous_value = ws_console.val();                    
+                ws_console.val(previous_value + textStatus + '*' + errorThrown + '*' + (ws_global_offset - 20) + "\n");
             }   
         });        
     }
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
-       var url_list_string = jQuery('textarea[name="given_urls"]').val();
-       console.attr("style", "display:block");
-       if(url_list_string.length>0){
-           url_list = url_list_string.split("\n");
+       var ws_url_list_string = jQuery('textarea[name="given_urls"]').val();
+       ws_console.attr("style", "display:block");
+       if(ws_url_list_string.length>0){
+           ws_url_list = ws_url_list_string.split("\n");
            submit_multiple();
        }
        else{
-           get_news();
+           ws_get_news();
        }
     }); 
 </script>

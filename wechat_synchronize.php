@@ -4,18 +4,13 @@ Plugin Name: wechat synchronize
 Plugin URI: https://github.com/zhaofeng-shu33/wechat_synchronize_to_wordpress
 Description: synchronize wechat articles to wordpress website
 Author: zhaofeng-shu33
-Version: 0.2
+Version: 0.3
 Author URI: https://github.com/zhaofeng-shu33
 */
 require_once "synchronize_api.php";
 require_once 'insert_by_url.php';
+if ( ! defined( 'ABSPATH' ) ) exit;
 
-if(isset($_REQUEST['test_token']) && $_REQUEST['test_token'] == 'wp'){
-define('ABSPATH', dirname(dirname(dirname(__DIR__))) . '/');
-require_once(ABSPATH . 'wp-config.php');
-require_once(ABSPATH . 'wp-admin/includes/admin.php');
-    ws_process_request();
-}
 if (is_admin()) {
 	add_action('admin_menu', 'ws_admin_menu');
 }
