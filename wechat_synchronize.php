@@ -27,7 +27,31 @@ function wsync_plugin_options(){
     require_once 'setting-page.php';
 }
 
-
+//! \brief: basic config setting function
+function wsync_set_config(){
+    $changeAuthor   = false;
+    $changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
+    $postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
+                                            $_REQUEST['post_status'] : 'publish';
+    $keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
+    $keepSource      = isset($_REQUEST['keep_source']) ? $_REQUEST['keep_source'] == 'keep': true;    
+    $postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
+    $postCate       = array($postCate);
+    $postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
+	$debug          = isset($_REQUEST['debug']) ? $_REQUEST['debug'] == 'on' : true;
+    $config = array(
+		'changeAuthor'    => $changeAuthor,
+		'changePostTime'  => $changePostTime,
+		'postStatus'   => $postStatus,
+        'postType' => $postType,
+		'keepStyle'     => $keepStyle,
+        'keepSource' => $keepSource,
+		'postCate' => $postCate,
+        'setFeatureImage' => true,
+        'debug' => $debug
+    );    
+    return $config;
+}
 
 function wsync_process_request(){
     $sync_history = isset($_REQUEST['wsync_history']) ? $_REQUEST['wsync_history'] == 'wsync_Yes' : false;
@@ -42,10 +66,11 @@ function wsync_process_request(){
         }
     }
     else{
-        $urls_str = isset($_REQUEST['given_urls']) ? $_REQUEST['given_urls'] : '';
+        $urls_str = isset($_REQUEST['given_urls']) ? esc_url($_REQUEST['given_urls']) : '';
         if($urls_str != ''){
             $url_list = explode("\n", $urls_str);
-            $return_array = wsync_insert_by_urls($url_list);
+            $config = wsync_set_config();
+            $return_array = wsync_insert_by_urls($url_list, $config);
         }
         else{
             $return_array = array('post_id' => -9, 'err_msg' => 'no urls are given');

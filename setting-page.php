@@ -81,6 +81,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
     var wsync_url_list = [];
     var wsync_url_global_id = 0;
     var wsync_global_offset = 0;
+    var wsync_is_debug = false;
     var wsync_get_newsync_termination = false;
     var wsync_console = jQuery("#console");
     var wsync_submit_single = function(url){
@@ -102,7 +103,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
              var previous_value = wsync_console.val();
              var data_json = JSON.parse(data);
              var extra_info = '';
-             if(data_json['post_id'] < 0)
+             if(data_json['post_id'] < 0 && wsync_is_debug)
                 extra_info = '*' + url;
              wsync_console.val(previous_value  + data + extra_info + "\n");
              var row = parseInt(wsync_console.attr("rows"));
@@ -117,8 +118,14 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
              }
          },
         error: function(jqXHR, textStatus, errorThrown){
-            var previous_value = wsync_console.val();                    
-            wsync_console.val(previous_value + textStatus + '*'+ errorThrown + '*' + url + "\n");
+            var previous_value = wsync_console.val();  
+            previous_value += textStatus + '*'+ errorThrown + "\n";
+            if(wsync_is_debug){
+                previous_value += url + "\n";
+                previous_value += jqXHR.responseText + "\n";
+            }
+            wsync_console.val(previous_value);
+
         }           
         })        
     }
@@ -163,6 +170,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
     }
    jQuery("#url").on('submit', function(e){
        e.preventDefault();
+       wsync_is_debug = jQuery('select[name="debug"]').val() == 'on'; // refresh the debug status
        var wsync_url_list_string = jQuery('textarea[name="given_urls"]').val();
        wsync_console.attr("style", "display:block");
        if(wsync_url_list_string.length>0){

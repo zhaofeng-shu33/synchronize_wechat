@@ -51,6 +51,7 @@ function wsync_get_html($url, $timeout = 30){
 *           'keepSource'[bool, default:true]: whether the original source info is kept 
 *	    	'postCate'[choice,default:not_classcified]: the classification to put the article
 *           'setFeatureImage'[bool,default:true]: whether to set the feature image
+            'debug'[bool, default:true]: whether to turn on debug mode, debug mode will output more detailed information
 *     }
 * \endparblock
 * \return $status
@@ -299,27 +300,7 @@ function wsync_set_image($html, $postId, $config = Null){
 }
 
 //! \brief insert url list into $wpdb, calling ::wsync_insert_by_url
-function wsync_insert_by_urls($urls) {
-    $changeAuthor   = false;
-    $changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
-    $postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
-                                            $_REQUEST['post_status'] : 'publish';
-    $keepStyle      = isset($_REQUEST['keep_style']) && $_REQUEST['keep_style'] == 'keep';
-    $keepSource      = isset($_REQUEST['keep_source']) ? $_REQUEST['keep_source'] == 'keep': true;    
-    $postCate       = isset($_REQUEST['post_cate']) ? intval($_REQUEST['post_cate']) : 1;
-    $postCate       = array($postCate);
-    $postType       = isset($_REQUEST['post_type']) ? $_REQUEST['post_type'] : 'post';
-	
-    $config = array(
-		'changeAuthor'    => $changeAuthor,
-		'changePostTime'  => $changePostTime,
-		'postStatus'   => $postStatus,
-        'postType' => $postType,
-		'keepStyle'     => $keepStyle,
-        'keepSource' => $keepSource,
-		'postCate' => $postCate,
-        'setFeatureImage' => true
-    );
+function wsync_insert_by_urls($urls, $config) {
     foreach ($urls as $url) {
         $return_array = wsync_insert_by_url($url, $config);
         if($return_array['post_id'] <= 0)
@@ -376,7 +357,7 @@ function wsync_download_image($postId, $dom, $config = Null) {
         $return_array = wsync_upload_image($src, $postId);
         $id = $return_array['post_id'];
         if($id < 0){
-            if(isset($_REQUEST['debug']) && $_REQUEST['debug'] == 'on' ){
+            if($config['debug']){
                 $return_array['article_id'] = $postId;
                 return $return_array;    
             }
