@@ -1,5 +1,6 @@
 # synchronize wechat
 synchronize wechat post articles to wordpress website
+
 ## Introduction
 WeChat is the most popular instant message tools in China. Nowadays, wechat posts are very common and people read traditional webpages in less frequency. 
 However, for better search engine index and cooperation figure maintenance. 
@@ -23,21 +24,19 @@ The policies of wechat service can be found at [here](https://mp.weixin.qq.com/c
 
 Note: Only the second feature uses the Wechat service.
 
-## Path to achieve our aim
-
-1. Build Developping environment (Turn on Wordpress Debug Mode in `config.php`)
-1. Design Modules(PHP Functions) to achieve each sub-goals
-1. Deployment on Real Environment and Testing
+## How to use
+See [wiki](https://github.com/zhaofeng-shu33/wechat_synchronize_to_wordpress/wiki/User-Guide)
 
 ## How to build Developping Environment
 See [wiki](https://github.com/zhaofeng-shu33/wechat_synchronize_to_wordpress/wiki/Developping-Environment)
 
 ### Prerequisite
 
-1. You need an indepedent public IP address binded to a server and your wechat public domain(must be **authorized**).
+1. You need an independent public IP address binded to your server and your wechat public domain(must be **authorized**).
 2. The server can deploy WordPress as developping environment.
 
 Note: The public IP address is used for the whitelist of the wechat public domain. Otherwise, you can not use the wechat api.
+
 ### ToDo List
 
 * Handle video.
@@ -45,6 +44,5 @@ Note: The public IP address is used for the whitelist of the wechat public domai
 * Wechat url cache.
 ### Playing with the API
 
-After successfully deploying the developping environment, you need to write some simple PHP functions to deal with the wechat api.
-
+### Documentation
 Use `doxygen` at the project root to generate the document.
