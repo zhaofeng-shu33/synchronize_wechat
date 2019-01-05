@@ -50,7 +50,7 @@ function wsync_get_history_url(){
     
     $url_list = array();
     while($offset < $data->newsync_count){ //
-        wsync_get_history_url_by_offset($url_list, $offset, 20, $api);
+        wsync_get_history_url_by_offset($offset, 20, $api);
         $offset += 20;
     }
     return $url_list;
@@ -74,9 +74,9 @@ function wsync_get_history_url_by_offset($offset, $num = 20, $api = null){
     }
     // extract urls of each article from $material list and append it to an array
     for($i=0; $i<count($material->item); $i++){ //
-        $newsync_item = $material->item[$i]->content->newsync_item;
-        for($j=0; $j<count($newsync_item); $j++){
-            $url = $newsync_item[$j]->url;
+        $news_item = $material->item[$i]->content->new_item;
+        for($j=0; $j<count($news_item); $j++){
+            $url = $news_item[$j]->url;
             array_push($url_list, $url);
         }            
     }
