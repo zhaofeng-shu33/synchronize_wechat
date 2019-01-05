@@ -1,6 +1,6 @@
 <?php
 /*
-Plugin Name: wechat synchronize
+Plugin Name: synchronize-wechat
 Plugin URI: https://github.com/zhaofeng-shu33/wechat_synchronize_to_wordpress
 Description: synchronize wechat articles to wordpress website
 Author: zhaofeng-shu33
@@ -8,7 +8,7 @@ Version: 0.3
 Author URI: https://github.com/zhaofeng-shu33
 */
 /**
- * @file wechat_synchronize.php
+ * @file synchronize_wechat.php
  */
 require_once "synchronize_api.php";
 require_once 'insert_by_url.php';
