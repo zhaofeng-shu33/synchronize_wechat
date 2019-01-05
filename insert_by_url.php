@@ -9,7 +9,7 @@ if(!class_exists('simple_html_dom_node')){
 //! \brief  check the domain name
 //! \param  $url
 //! \return  trimed $url if $url contains the domain name of wx; otherwise, empty string is returned
-function ws_check_wx_url($url){
+function wsync_check_wx_url($url){
     if (strpos($url, 'http://mp.weixin.qq.com/s') !== false || strpos($url, 'https://mp.weixin.qq.com/s') !== false) {
         $url = str_replace('http://', 'https://', $url);
 	    return trim($url);
@@ -20,7 +20,7 @@ function ws_check_wx_url($url){
 //! \brief  get the html from url
 //! \param  $url
 //! \return  $html raw text, no error handling in this function
-function ws_get_html($url, $timeout = 30){
+function wsync_get_html($url, $timeout = 30){
     //first check local copy
     $file_name = __DIR__ . '/asset/' . sha1($url);
     $html = '';
@@ -62,25 +62,25 @@ function ws_get_html($url, $timeout = 30){
 *     }
 * \endparblock
 */
-function ws_insert_by_url($url, $config = Null){
-    $url = ws_check_wx_url($url);
+function wsync_insert_by_url($url, $config = Null){
+    $url = wsync_check_wx_url($url);
     if (!$url) {
             return array('post_id' => -1, 'err_msg' => 'url does not contain mp.weixin.qq.com');
     }
-    $html = ws_get_html($url);
+    $html = wsync_get_html($url);
     if (!$html) {
         return array('post_id' => -2, 'err_msg' => 'cannot get any message from '. $url);
     }
-    return ws_insert_by_html($html, $config);
+    return wsync_insert_by_html($html, $config);
 }
-function ws_get_publish_date($html){
+function wsync_get_publish_date($html){
     preg_match('/(publish_time = ")([^\"]+)"/', $html, $matches);
     $postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
     $postDate = date('Y-m-d H:i:s', strtotime($postDate));
     return $postDate;
 }
-//! \brief insert $wpdb from html, called by ::ws_insert_by_url
-function ws_insert_by_html($html, $config = Null){
+//! \brief insert $wpdb from html, called by ::wsync_insert_by_url
+function wsync_insert_by_html($html, $config = Null){
     preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
     // make sure the title of the article exists
     if (count($matches)==0) {
@@ -92,7 +92,7 @@ function ws_insert_by_html($html, $config = Null){
     if ($post_id != 0) {
         //check whether post content is empty;
         if(strlen(get_post($post_id)->post_content)==0){
-            return ws_set_image($html, $post_id, $config);            
+            return wsync_set_image($html, $post_id, $config);            
         }
         return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
     }
@@ -101,7 +101,7 @@ function ws_insert_by_html($html, $config = Null){
     if ($changePostTime) {
         $postDate = date('Y-m-d H:i:s', current_time('timestamp'));
     } else {
-        $postDate = ws_get_publish_date($html);
+        $postDate = wsync_get_publish_date($html);
     }
     // whether to remove the original article style
     $keepStyle = isset($config['keepStyle']) && $config['keepStyle'];
@@ -151,7 +151,7 @@ function ws_insert_by_html($html, $config = Null){
     if(is_wp_error($postId)){
         return array('post_id' => -8, 'err_msg' => $postId->get_error_message());
     }
-    return ws_set_image($html, $postId, $config);
+    return wsync_set_image($html, $postId, $config);
 }
 
 //! \brief  get 1. attached image for $postId, 2. unattached image, and check whether image_name is within it
@@ -160,7 +160,7 @@ function ws_insert_by_html($html, $config = Null){
 //! \return  $status
 //! `{'post_id':$postId, 'err_msg':$err_msg}`
 //! if the image exists, set $postId = image attachment id, otherwise set postId = 0
-function ws_check_image_exists($postId, $image_name){
+function wsync_check_image_exists($postId, $image_name){
     $media_array_unattached = get_children(array(
         'post_type' => 'attachment',
         'post_mime_type' => 'image'
@@ -179,7 +179,7 @@ function ws_check_image_exists($postId, $image_name){
 //! \brief  guess the image extension from the url
 //! \param  $url: image url
 //! \return  extension name with the dot
-function ws_get_image_extension_from_url($url){
+function wsync_get_image_extension_from_url($url){
   $extension = strstr(basename(explode('?', $url)[0]), '.');
   if($extension == false){
       preg_match('/wx_fmt=([a-z]+)/', $url, $matches);
@@ -193,9 +193,9 @@ function ws_get_image_extension_from_url($url){
 //! \param  $url: absolute url of the image file
 //! \param  $prefix: prefix to prepend before the image name
 //! \return  image file name, no error handling.
-function ws_get_image_name($url, $prefix, $extension_=Null){
+function wsync_get_image_name($url, $prefix, $extension_=Null){
     $check_sum = sha1($url);
-    $extension = ws_get_image_extension_from_url($url);
+    $extension = wsync_get_image_extension_from_url($url);
     if($extension == false)
         $extension = '.jpeg';
 	$fileName = $prefix  . $check_sum . $extension;
@@ -206,15 +206,15 @@ function ws_get_image_name($url, $prefix, $extension_=Null){
 //! \param  $postId: post Id
 //! \return $status
 //! `status = {'post_id':$postId, 'err_msg':$err_msg}`
-function ws_upload_image($url, $postId, $image_name = Null){
+function wsync_upload_image($url, $postId, $image_name = Null){
     if($image_name == Null){
-		$prefixName = get_option('ws_image_name_prefix', 'ws-plugin-');
-        $fileName = ws_get_image_name($url, $prefixName);
+		$prefixName = get_option('wsync_image_name_prefix', 'ws-plugin-');
+        $fileName = wsync_get_image_name($url, $prefixName);
     }
     else{
         $fileName = $image_name;
     }
-    $return_array = ws_check_image_exists($postId, explode('.', $fileName)[0]);
+    $return_array = wsync_check_image_exists($postId, explode('.', $fileName)[0]);
     $r_post_id = $return_array['post_id'];
     if($r_post_id > 0){
         if(wp_get_post_parent_id($r_post_id) ==0){
@@ -247,12 +247,12 @@ function ws_upload_image($url, $postId, $image_name = Null){
         return array('post_id' => -5, 'err_msg' => 'download image failed');
     }
 }
-//! \brief: set the thumbnail image for the specified post, called by ::ws_set_image
-function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
+//! \brief: set the thumbnail image for the specified post, called by ::wsync_set_image
+function wsync_set_feature_image($postId, $feature_image_url, $imageName = Null){
     if(has_post_thumbnail($postId)){
         return array('post_id' => get_post_thumbnail_id($postId), 'err_msg' => 'post already has thumbnail');
     }
-    $return_array = ws_upload_image($feature_image_url, $postId, $imageName);
+    $return_array = wsync_upload_image($feature_image_url, $postId, $imageName);
     if($return_array['post_id'] > 0){
         $post_meta_id = set_post_thumbnail($postId, $return_array['post_id']);
         if($post_meta_id == 0){
@@ -269,12 +269,12 @@ function ws_set_feature_image($postId, $feature_image_url, $imageName = Null){
 //! \brief  extract image urls from html, and download it to local file system, update image url in postId->postContent
 //! \param  $html: raw html text, $postId: post Id
 //! \return  status = {'post_id':$postId, 'err_msg':$err_msg}
-function ws_set_image($html, $postId, $config = Null){
+function wsync_set_image($html, $postId, $config = Null){
     // set featured image
     $setFeatureImage = isset($config['setFeatureImage']) ? $config['setFeatureImage'] : true;
     if ($setFeatureImage) {
         preg_match('/(msg_cdn_url = ")([^\"]+)"/', $html, $matches);
-        ws_set_feature_image($postId, $matches[2]);
+        wsync_set_feature_image($postId, $matches[2]);
     }
     // process images(tested)
     $dom  = str_get_html($html);
@@ -295,11 +295,11 @@ function ws_set_image($html, $postId, $config = Null){
         // $videoDom->setAttribute('src', $dataSrc);
     }
     // images must be downloaded to local file system
-    return ws_download_image($postId, $dom, $config);
+    return wsync_download_image($postId, $dom, $config);
 }
 
-//! \brief insert url list into $wpdb, calling ::ws_insert_by_url
-function ws_insert_by_urls($urls) {
+//! \brief insert url list into $wpdb, calling ::wsync_insert_by_url
+function wsync_insert_by_urls($urls) {
     $changeAuthor   = false;
     $changePostTime = isset($_REQUEST['change_post_time']) && $_REQUEST['change_post_time'] == 'true';
     $postStatus     = isset($_REQUEST['post_status']) && in_array($_REQUEST['post_status'], array('publish', 'pending', 'draft')) ?
@@ -321,19 +321,19 @@ function ws_insert_by_urls($urls) {
         'setFeatureImage' => true
     );
     foreach ($urls as $url) {
-        $return_array = ws_insert_by_url($url, $config);
+        $return_array = wsync_insert_by_url($url, $config);
         if($return_array['post_id'] <= 0)
             return $return_array;
     }
     return $return_array;
 }
-//! \brief resolve css background images, called by ::ws_download_image
-function ws_resolve_bg_image(&$content, $postId){
+//! \brief resolve css background images, called by ::wsync_download_image
+function wsync_resolve_bg_image(&$content, $postId){
     $re = '/background-image: url\(&quot;([^&]+)&quot;\)/';
     preg_match($re, $content, $matches);
     while(count($matches)==2){
         $image_url = $matches[1];
-        $return_array = ws_upload_image($image_url, $postId);
+        $return_array = wsync_upload_image($image_url, $postId);
         $id = $return_array['post_id'];
         $imageInfo = wp_get_attachment_image_src($id, 'full');
         $src       = $imageInfo[0];   
@@ -343,8 +343,8 @@ function ws_resolve_bg_image(&$content, $postId){
     }
     $content = str_replace('&qquot;', '&quot;', $content);    
 }
-//! \brief resolve article origin, called by ::ws_download_image
-function ws_resolve_origin($dom){
+//! \brief resolve article origin, called by ::wsync_download_image
+function wsync_resolve_origin($dom){
     $origin = $dom->find('#profileBt a', 0);
     if($origin){
         $origin = $origin->plaintext;
@@ -355,10 +355,10 @@ function ws_resolve_origin($dom){
     $origin = trim(esc_html($origin));
     return $origin;
 }
-//! \brief download images in $dom, called by ::ws_set_image
-function ws_download_image($postId, $dom, $config = Null) {
+//! \brief download images in $dom, called by ::wsync_set_image
+function wsync_download_image($postId, $dom, $config = Null) {
 	$images            = $dom->find('img');
-	$centeredImage     = get_option('ws_image_centered', 'no') == 'yes';
+	$centeredImage     = get_option('wsync_image_centered', 'no') == 'yes';
     foreach ($images as $image) {
         $src  = $image->getAttribute('src');
         if (!$src) {
@@ -373,7 +373,7 @@ function ws_download_image($postId, $dom, $config = Null) {
                 $image->setAttribute('class', $class);
         }
         $src = preg_replace('/^\/\//', 'http://', $src, 1);
-        $return_array = ws_upload_image($src, $postId);
+        $return_array = wsync_upload_image($src, $postId);
         $id = $return_array['post_id'];
         if($id < 0){
             if(isset($_REQUEST['debug']) && $_REQUEST['debug'] == 'on' ){
@@ -391,8 +391,8 @@ function ws_download_image($postId, $dom, $config = Null) {
     }
     // resolve css background images
     $content = $dom->find('#js_content', 0)->innertext;
-    ws_resolve_bg_image($content, $postId);
-    $origin = ws_resolve_origin($dom);
+    wsync_resolve_bg_image($content, $postId);
+    $origin = wsync_resolve_origin($dom);
 
     
     $keepSource = isset($config['keepSource']) ? $config['keepSource'] : true;

@@ -14,7 +14,7 @@ use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
  * @param: void
  * @return valid access token string
  */
-function ws_get_access_token(){
+function wsync_get_access_token(){
   // notice that the access_token is the serialized json string containing the expired time (UTC)
     return get_option('access_token');
 }
@@ -24,7 +24,7 @@ function ws_get_access_token(){
  * @param: access token string
  * @return void
  */
-function ws_save_access_token($token){
+function wsync_save_access_token($token){
     update_option('access_token', $token);
 }
 
@@ -32,13 +32,13 @@ function ws_save_access_token($token){
  * @param: valid access token
  * @return url list of current wechat account prior to current date
  */
-function ws_get_history_url(){
+function wsync_get_history_url(){
     $api = new Api(
 	    array(
             'appId' => get_option('appid'),
             'appSecret'	=> get_option('appsecret'),
-            'get_access_token' => 'ws_get_access_token',
-            'save_access_token' => 'ws_save_access_token'
+            'get_access_token' => 'wsync_get_access_token',
+            'save_access_token' => 'wsync_save_access_token'
         )
     );
     list($err, $data) = $api->get_material_count();
@@ -49,30 +49,30 @@ function ws_get_history_url(){
     $offset = 0;
     
     $url_list = array();
-    while($offset < $data->news_count){ //
-        ws_get_history_url_by_offset($url_list, $offset, 20, $api);
+    while($offset < $data->newsync_count){ //
+        wsync_get_history_url_by_offset($url_list, $offset, 20, $api);
         $offset += 20;
     }
     return $url_list;
 }
 
-function ws_get_history_url_by_offset(&$url_list, $offset, $num = 20, $api = null){
+function wsync_get_history_url_by_offset(&$url_list, $offset, $num = 20, $api = null){
     if($api == null){
         $api = new Api(
             array(
                 'appId' => get_option('appid'),
                 'appSecret'	=> get_option('appsecret'),
-                'get_access_token' => 'ws_get_access_token',
-                'save_access_token' => 'ws_save_access_token'
+                'get_access_token' => 'wsync_get_access_token',
+                'save_access_token' => 'wsync_save_access_token'
             )
         );    
     }
     list($err, $material) = $api->get_materials('news', $offset, $num);
     // extract urls of each article from $material list and append it to an array
     for($i=0; $i<count($material->item); $i++){ //
-        $news_item = $material->item[$i]->content->news_item;
-        for($j=0; $j<count($news_item); $j++){
-            $url = $news_item[$j]->url;
+        $newsync_item = $material->item[$i]->content->newsync_item;
+        for($j=0; $j<count($newsync_item); $j++){
+            $url = $newsync_item[$j]->url;
             array_push($url_list, $url);
         }            
     }    

@@ -30,20 +30,20 @@ class ProfessionTest extends TestCase
             return $this->postId;
         $this->postId = post_exists($this->post_title);
         if($this->postId == 0){
-            $return_array = ws_insert_by_url($this->webpage_url);
+            $return_array = wsync_insert_by_url($this->webpage_url);
             $this->postId = $return_array['post_id'];
         }
         return $this->postId;
     }
-    public function test_ws_resolve_bg_image()
+    public function test_wsync_resolve_bg_image()
     {
         $postId = $this->get_postId();
-        ws_resolve_bg_image($this->bg_str, $postId);
+        wsync_resolve_bg_image($this->bg_str, $postId);
         $this->assertTrue(strpos($this->bg_str, '2325a5e7156c635c0f0940b6654991a786891c34.gif&quot;')>0);
     }
-    public function test_ws_resolve_origin(){
+    public function test_wsync_resolve_origin(){
         $dom = $this->get_dom();
-        $origin = ws_resolve_origin($dom);
+        $origin = wsync_resolve_origin($dom);
         $this->assertSame($origin, 'THU深研院职协');
     }
 }
