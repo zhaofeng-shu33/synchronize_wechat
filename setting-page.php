@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
 <div>
-<h1> Wechat synchronization </h1>
+<h1> synchronize wechat </h1>
 <form method="post" action="options.php">
 <?php settings_fields('wsync-settings-group'); ?>
  <!--tab implementation in the future -->
