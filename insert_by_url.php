@@ -1,6 +1,6 @@
 <?php
 /**
- * \file insert_by_url.php
+ * @file insert_by_url.php
  */
 if ( ! defined( 'ABSPATH' ) ) exit;
 if(!class_exists('simple_html_dom_node')){
