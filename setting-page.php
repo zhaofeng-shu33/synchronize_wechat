@@ -65,8 +65,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
      <th scope="row"><label for="debug">Debug mode</label></th>
      <td>
         <select name="debug">
-                <option value="off">off</option>
-                <option value="on" selected>on</option>
+                <option value="off" selected>off</option>
+                <option value="on">on</option>
         </select>
      </td>      
      </tr>
