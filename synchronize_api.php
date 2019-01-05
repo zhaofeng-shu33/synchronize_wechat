@@ -51,7 +51,7 @@ function wsync_get_history_url(){
     $url_list = array();
     while($offset < $data->news_count){ //
         $return_array = wsync_get_history_url_by_offset($offset, 20, $api);
-        if($return_array['error_code'] >=0){
+        if($return_array['status_code'] >=0){
             array_push($url_list, $return_array['data']);
         }
         $offset += 20;
