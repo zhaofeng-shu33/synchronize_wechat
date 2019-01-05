@@ -3,7 +3,7 @@ synchronize wechat post articles to wordpress website
 
 ## Introduction
 WeChat is the most popular instant message tools in China. Nowadays, wechat posts are very common and people read traditional webpages in less frequency. 
-However, for better search engine index and Corporation image maintenance. 
+However, for better search engine index and Corporation image maintenance,
 Official website needs a technique to synchronize what they post on wechat public platform to their own website. 
 By our search we do not find any open source solution. 
 As a result, we try to implement a one. 
@@ -25,10 +25,10 @@ The policies of wechat service can be found at [here](https://mp.weixin.qq.com/c
 Note: Only the second feature uses the Wechat service.
 
 ## How to use
-See [wiki](https://github.com/zhaofeng-shu33/wechat_synchronize_to_wordpress/wiki/User-Guide)
+See [wiki](https://github.com/zhaofeng-shu33/synchronize_wechat/wiki/User-Guide)
 
 ## How to build Developping Environment
-See [wiki](https://github.com/zhaofeng-shu33/wechat_synchronize_to_wordpress/wiki/Developping-Environment)
+See [wiki](https://github.com/zhaofeng-shu33/synchronize_wechat/wiki/Developping-Environment)
 
 ### Prerequisite
 
