@@ -20,14 +20,14 @@ if (is_admin()) {
 
 //! \brief initialize admin menu as submenu under **Settings**
 function wsync_admin_menu(){
-    add_options_page('ws options', 'ws', 'manage_options', 'ws-unique-identifier', 'wsync_plugin_options');
+    add_options_page('wsync options', 'wsync', 'manage_options', 'wsync-unique-identifier', 'wsync_plugin_options');
     add_action('admin_init', 'wsync_register_settings');
 }
 
 //! \brief register setting data for persistent storage
 function wsync_register_settings(){
-    register_setting('ws-settings-group', 'appid');
-    register_setting('ws-settings-group', 'appsecret');
+    register_setting('wsync-settings-group', 'appid');
+    register_setting('wsync-settings-group', 'appsecret');
     add_option('access_token');
 }
 
@@ -38,24 +38,17 @@ function wsync_plugin_options(){
 
 //! \brief  basic config setting function
 function wsync_set_config(){
-    $changeAuthor   = false;
     $changePostTime = isset($_POST['change_post_time']) && $_POST['change_post_time'] == 'true';
     $postStatus     = isset($_POST['post_status']) && in_array($_POST['post_status'], array('publish', 'pending', 'draft')) ?
                                             $_POST['post_status'] : 'publish';
     $keepStyle      = isset($_POST['keep_style']) && $_POST['keep_style'] == 'keep';
     $keepSource      = isset($_POST['keep_source']) ? $_POST['keep_source'] == 'keep': true;    
-    $postCate       = isset($_POST['post_cate']) ? intval($_POST['post_cate']) : 1;
-    $postCate       = array($postCate);
-    $postType       = isset($_POST['post_type']) ? $_POST['post_type'] : 'post';
 	$debug          = isset($_POST['debug']) ? $_POST['debug'] == 'on' : true;
     $config = array(
-		'changeAuthor'    => $changeAuthor,
 		'changePostTime'  => $changePostTime,
 		'postStatus'   => $postStatus,
-        'postType' => $postType,
 		'keepStyle'     => $keepStyle,
         'keepSource' => $keepSource,
-		'postCate' => $postCate,
         'setFeatureImage' => true,
         'debug' => $debug
     );    

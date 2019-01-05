@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 <div>
 <h1> Wechat synchronization </h1>
 <form method="post" action="options.php">
-<?php settings_fields('ws-settings-group'); ?>
+<?php settings_fields('wsync-settings-group'); ?>
  <!--tab implementation in the future -->
  <table class="form-table">
         <tr valign="top">
@@ -84,6 +84,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
     var wsync_is_debug = false;
     var wsync_get_newsync_termination = false;
     var wsync_console = jQuery("#console");
+    var wsync_console_lines = 1;
     var wsync_submit_single = function(url){
         var data_ = {
             'action': 'wsync_process_request',
@@ -118,13 +119,13 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
              }
          },
         error: function(jqXHR, textStatus, errorThrown){
-            var previous_value = wsync_console.val();  
-            previous_value += textStatus + '*'+ errorThrown + "\n";
+            var console_value = wsync_console.val();  
+            console_value += textStatus + '*'+ errorThrown + "\n";
             if(wsync_is_debug){
-                previous_value += url + "\n";
-                previous_value += jqXHR.responseText + "\n";
+                console_value += url + "\n";
+                console_value += jqXHR.responseText + "\n";
             }
-            wsync_console.val(previous_value);
+            wsync_console.val(console_value);
 
         }           
         })        
@@ -135,6 +136,10 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             var url = wsync_url_list.pop();
             wsync_submit_single(url);
         }          
+    }
+
+    var wsync_console_write = function(content){
+    
     }
     var wsync_get_news = function(){
         var data_to_sent = 
@@ -150,26 +155,36 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             data: data_to_sent,
             success: function(data, textStatus, jqXHR){
                 var return_array = JSON.parse(data);
-                var previous_value = wsync_console.val();
+                var console_value = wsync_console.val();
                 if(return_array.status_code < 0){
-                    wsync_console.val(previous_value + data + "\n");
+                    wsync_console.val(console_value + data + "\n");
                     return
                 }
                 var url_list = return_array.data;
-                wsync_console.val(previous_value + "get urls : " + url_list.length + "\n");
+                console_value +=  "get urls : " + url_list.length + "\n";
                 var row = parseInt(wsync_console.attr("rows"));
                 wsync_console.attr("rows", row+1);
                 // issue new requests for each url in result_array
                 if(url_list.length == 0)
                     wsync_get_newsync_termination = true;
-                else{
-                    wsync_url_list = wsync_url_list.concat(result_array);
+                else if(wsync_is_debug == false){
+                    wsync_url_list = wsync_url_list.concat(url_list);
                     wsync_submit_multiple();                    
                 }                
+                else{
+                    console_value += url_list.join("\n") + "\n";
+                }
+                wsync.console.val(console_value);
             },
             error: function(jqXHR, textStatus, errorThrown){
-                var previous_value = wsync_console.val();                    
-                wsync_console.val(previous_value + textStatus + '*' + errorThrown + '*' + (wsync_global_offset - 20) + "\n");
+                var console_value = wsync_console.val();
+                console_value += textStatus + '*' + errorThrown 
+                    + "at global offset : " + (wsync_global_offset - 20) + "\n";
+                if(wsync_is_debug){
+                    console_value +=  jqXHR.responseText + "\n";
+
+                }
+                wsync_console.val(console_value);
             }   
         });        
     }
