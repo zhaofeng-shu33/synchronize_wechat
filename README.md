@@ -3,7 +3,7 @@ synchronize wechat post articles to wordpress website
 
 ## Introduction
 WeChat is the most popular instant message tools in China. Nowadays, wechat posts are very common and people read traditional webpages in less frequency. 
-However, for better search engine index and cooperation figure maintenance. 
+However, for better search engine index and Corporation image maintenance. 
 Official website needs a technique to synchronize what they post on wechat public platform to their own website. 
 By our search we do not find any open source solution. 
 As a result, we try to implement a one. 
