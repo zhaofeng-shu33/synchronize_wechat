@@ -277,7 +277,7 @@ function ws_set_image($html, $postId, $config = Null){
         ws_set_feature_image($postId, $matches[2]);
     }
     // process images(tested)
-    $dom  = ws_get_html($html);
+    $dom  = str_get_html($html);
     $imageDoms = $dom->find('img');
     foreach ($imageDoms as $imageDom) {
         $dataSrc = $imageDom->getAttribute('data-src');
