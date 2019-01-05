@@ -49,7 +49,7 @@ function wsync_get_history_url(){
     $offset = 0;
     
     $url_list = array();
-    while($offset < $data->newsync_count){ //
+    while($offset < $data->news_count){ //
         wsync_get_history_url_by_offset($offset, 20, $api);
         $offset += 20;
     }
