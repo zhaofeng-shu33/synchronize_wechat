@@ -84,8 +84,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
     var wsync_is_debug = false;
     var wsync_get_newsync_termination = false;
     var wsync_console = jQuery("#console");
-    var wsync_console_lines = 1;
-    var wsync_submit_single = function(url){
+    function wsync_submit_single(url){
         var data_ = {
             'action': 'wsync_process_request',
             'url_id': wsync_url_global_id,
@@ -96,41 +95,35 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         };
         wsync_url_global_id += 1;
         jQuery.ajax({
-         url: ajaxurl,
-         type: "POST",
-         timeout: 50000,
-         data: data_,
-         success: function(data, textStatus, jqXHR){
-             var previous_value = wsync_console.val();
-             var data_json = JSON.parse(data);
-             var extra_info = '';
-             if(data_json['status_code'] < 0 && wsync_is_debug)
-                extra_info = '*' + url;
-             wsync_console.val(previous_value  + data + extra_info + "\n");
-             var row = parseInt(wsync_console.attr("rows"));
-             wsync_console.attr("rows", row+1);
-             var new_url = wsync_url_list.pop();
-             if(new_url != undefined){
-                 wsync_submit_single(new_url);
-             }
-             else{
-                if(jQuery('select[name="wsync_history"]').val() == 'wsync_Yes' && wsync_get_newsync_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
-                    wsync_get_news();
-             }
-         },
-        error: function(jqXHR, textStatus, errorThrown){
-            var console_value = wsync_console.val();  
-            console_value += textStatus + '*'+ errorThrown + "\n";
-            if(wsync_is_debug){
-                console_value += url + "\n";
-                console_value += jqXHR.responseText + "\n";
-            }
-            wsync_console.val(console_value);
-
-        }           
+             url: ajaxurl,
+             type: "POST",
+             timeout: 50000,
+             data: data_,
+             success: function(data, textStatus, jqXHR){
+                 var data_json = JSON.parse(data);
+                 var extra_info = '';
+                 if(data_json['status_code'] < 0 && wsync_is_debug)
+                    extra_info = '*' + url;
+                 wsync_console_writeline(data + extra_info)
+                 var new_url = wsync_url_list.pop();
+                 if(new_url != undefined){
+                     wsync_submit_single(new_url);
+                 }
+                 else{
+                    if(jQuery('select[name="wsync_history"]').val() == 'wsync_Yes' && wsync_get_newsync_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
+                        wsync_get_news();
+                 }
+             },
+            error: function(jqXHR, textStatus, errorThrown){
+                wsync_console_writeline(textStatus + '*'+ errorThrown);
+                if(wsync_is_debug){
+                    wsync_console_writeline(url);
+                    wsync_console_writeline(jqXHR.responseText);
+                }
+            }           
         })        
     }
-    var wsync_submit_multiple = function(){
+    function wsync_submit_multiple(){
         var submitted_length = wsync_url_list.length;
         for(var i = 0; i < Math.min(5, submitted_length); i++){ 
             var url = wsync_url_list.pop();
@@ -138,10 +131,14 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         }          
     }
 
-    var wsync_console_write = function(content){
-    
+    //! content added to the console
+    function wsync_console_writeline(content, row_add = 1){
+        var console_value = wsync_console.val();
+        var row = parseInt(wsync_console.attr("rows"));
+        wsync_console.attr("rows", row + row_add);
+        wsync_console.val(console_value + content + '\n');
     }
-    var wsync_get_news = function(){
+    function wsync_get_news(){
         var data_to_sent = 
                    {'action':'wsync_process_request',
                     'offset': wsync_global_offset,
@@ -155,13 +152,12 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             data: data_to_sent,
             success: function(data, textStatus, jqXHR){
                 var return_array = JSON.parse(data);
-                var console_value = wsync_console.val();
                 if(return_array.status_code < 0){
-                    wsync_console.val(console_value + data + "\n");
+                    wsync_console_writeline(data);
                     return
                 }
                 var url_list = return_array.data;
-                console_value +=  "get urls : " + url_list.length + "\n";
+                wsync_console_writeline("get urls : " + url_list.length);
                 var row = parseInt(wsync_console.attr("rows"));
                 wsync_console.attr("rows", row+1);
                 // issue new requests for each url in result_array
@@ -172,19 +168,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                     wsync_submit_multiple();                    
                 }                
                 else{
-                    console_value += url_list.join("\n") + "\n";
-                }
-                wsync.console.val(console_value);
+                    wsync_console_writeline(url_list.join("\n"), url_list.length);
+                }                
             },
             error: function(jqXHR, textStatus, errorThrown){
-                var console_value = wsync_console.val();
-                console_value += textStatus + '*' + errorThrown 
-                    + "at global offset : " + (wsync_global_offset - 20) + "\n";
+                wsync_console_writeline(textStatus + '*' + errorThrown);
+                wsync_console_writeline("at global offset : " + (wsync_global_offset - 20));
                 if(wsync_is_debug){
-                    console_value +=  jqXHR.responseText + "\n";
-
+                    wsync_console_writeline(jqXHR.responseText);
                 }
-                wsync_console.val(console_value);
             }   
         });        
     }
