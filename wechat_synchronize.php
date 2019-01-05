@@ -62,31 +62,41 @@ function wsync_set_config(){
     return $config;
 }
 
+function wsync_split_url($url_list_string){
+    $url_list = explode("\n", $url_list_string);
+    foreach($url_list as &$url){
+        $url = esc_url($url);
+    }
+    return $url_list;
+}
 //! \brief ajax callback main function
 function wsync_process_request(){
     $sync_history = isset($_POST['wsync_history']) ? $_POST['wsync_history'] == 'wsync_Yes' : false;
     if($sync_history){
         if(isset($_POST['offset'])){
-            $return_array = array();
-            $num = isset($_POST['num']) ? intval($_POST['offset']) : 20;
-            wsync_get_history_url_by_offset($return_array, $_POST['offset'], $num);            
+            $num = isset($_POST['num']) ? intval($_POST['num']) : 20;
+            if($num <=0 || $num >20){
+                $return_array = array('status_code' => -10, 'err_msg' => 'invalid num given');            
+            }
+            $offset = intval($_POST['offset']);
+            $return_array = wsync_get_history_url_by_offset($offset, $num);            
         }
-        else{
+        else{ //if no offset parameter, get the whole history url list
             $return_array = wsync_get_history_url();
         }
     }
-    else{ //    not synchronize history articles, read url list from post data
-        $urls_str = isset($_POST['given_urls']) ? esc_url($_POST['given_urls']) : '';
+    else{ //    don't synchronize history articles, read url list from post data
+        $urls_str = isset($_POST['given_urls']) ? $_POST['given_urls'] : '';
         if($urls_str != ''){
-            $url_list = explode("\n", $urls_str);
+            $url_list = wsync_split_url($urls_str);
             $config = wsync_set_config();
             $return_array = wsync_insert_by_urls($url_list, $config);
+            if(isset($_POST['url_id']) && $config['debug']){
+                $return_array['url_id'] = esc_textarea($_POST['url_id']);
+            }
         }
         else{
-            $return_array = array('post_id' => -9, 'err_msg' => 'no urls are given');
-        }
-        if(isset($_POST['url_id'])){
-            $return_array['url_id'] = $_POST['url_id'];
+            $return_array = array('status_code' => -9, 'err_msg' => 'no urls are given');
         }
     }
     echo json_encode($return_array);

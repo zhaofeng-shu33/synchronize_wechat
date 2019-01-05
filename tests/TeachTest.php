@@ -34,7 +34,7 @@ class TeachTest extends TestCase
         $html = fetch_html($this->html_file_name, $this->webpage_url);
         $html_remove_title = str_replace('msg_title', 'title_msg', $html);
         $return_array = wsync_insert_by_html($html_remove_title);
-        $this->assertSame($return_array['post_id'], -3);
+        $this->assertSame($return_array['status_code'], -3);
 
         $html_change_title = preg_replace('/msg_title = "([^\"]+)"/', 'msg_title = "Hello world!"', $html);
         $return_array = wsync_insert_by_html($html_change_title);
@@ -46,7 +46,7 @@ class TeachTest extends TestCase
     public function test_wsync_insert_by_html_true(){
         $html = fetch_html($this->html_file_name, $this->webpage_url);
         $return_array = wsync_insert_by_html($html, array('postStatus' => 'publish'));
-        $pid = $return_array['post_id'];
+        $pid = $return_array['status_code'];
         $this->assertTrue($pid > 0);
     }
     /**
@@ -64,15 +64,15 @@ class TeachTest extends TestCase
     public function test_wsync_insert_by_url_false()
     {
         $return_array = wsync_insert_by_url('http://baidu.com');        
-        $this->assertSame($return_array['post_id'], -1);
+        $this->assertSame($return_array['status_code'], -1);
 
         $return_array = wsync_insert_by_url(str_replace('Yu','uY',$this->webpage_url)); 
-        $this->assertSame($return_array['post_id'], -3);
+        $this->assertSame($return_array['status_code'], -3);
     }
     public function test_wsync_insert_by_url_true()
     {
         $return_array = wsync_insert_by_url($this->webpage_url);   
-        $this->assertTrue($return_array['post_id'] > 0);
+        $this->assertTrue($return_array['status_code'] > 0);
     }
     /**
      * @group network
@@ -82,7 +82,7 @@ class TeachTest extends TestCase
         $image_url_false = str_replace('kNe', 'eNk', $this->image_url);
 
         $return_array = wsync_upload_image($image_url_false, 1);
-        $this->assertSame($return_array['post_id'], -5);
+        $this->assertSame($return_array['status_code'], -5);
     }
     /**
      * @group local
@@ -90,12 +90,12 @@ class TeachTest extends TestCase
     public function test_wsync_upload_image_true()
     {
         $return_array = self::get_image();
-        $this->assertTrue($return_array['post_id'] > 0);
+        $this->assertTrue($return_array['status_code'] > 0);
     }
     public function test_wsync_upload_image_checksum()
     {
         $return_array = wsync_upload_image($this->checksum_image_url, 1);
-        $this->assertTrue($return_array['post_id'] > 0);
+        $this->assertTrue($return_array['status_code'] > 0);
         $return_array = wsync_upload_image($this->checksum_image_url, 1);
         $this->assertSame($return_array['err_msg'], 'image already exists');
 
@@ -116,23 +116,23 @@ class TeachTest extends TestCase
         $this->assertSame($return_array['err_msg'], 'image already exists');
 
         $return_array = wsync_check_image_exists(1, 'Picture2.png');
-        $this->assertSame($return_array['post_id'], 0);
+        $this->assertSame($return_array['status_code'], 0);
     }
     
     public function test_wsync_set_feature_image()
     {
         $return_array = wsync_set_feature_image(1, $this->image_url, $this->image_name);
-        $this->assertTrue($return_array['post_id'] > 0);
+        $this->assertTrue($return_array['status_code'] > 0);
     }
     public function test_wsync_downloadImage()
     {
         $html = fetch_html($this->html_file_name, $this->webpage_url);
         $return_array = wsync_insert_by_html($html);
-        $this->assertTrue($return_array['post_id'] > 0);
+        $this->assertTrue($return_array['status_code'] > 0);
 
-        $postId = $return_array['post_id'];
-        $return_array = wsync_set_image($html, $return_array['post_id']);
-        $this->assertTrue($return_array['post_id'] > 0);
+        $postId = $return_array['status_code'];
+        $return_array = wsync_set_image($html, $return_array['status_code']);
+        $this->assertTrue($return_array['status_code'] > 0);
     }
 }
 ?>

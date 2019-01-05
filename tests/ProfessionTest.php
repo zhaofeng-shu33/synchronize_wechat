@@ -31,7 +31,7 @@ class ProfessionTest extends TestCase
         $this->postId = post_exists($this->post_title);
         if($this->postId == 0){
             $return_array = wsync_insert_by_url($this->webpage_url);
-            $this->postId = $return_array['post_id'];
+            $this->postId = $return_array['status_code'];
         }
         return $this->postId;
     }

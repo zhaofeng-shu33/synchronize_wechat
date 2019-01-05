@@ -58,7 +58,7 @@ function wsync_get_html($url, $timeout = 30){
 * \parblock
 *
 *     $status = {
-*         'post_id'[int]: if post_id = 0, error occurs
+*         'status_code'[int]: if status_code = 0, error occurs
 *         'err_msg'[str]: if no error, empty str      
 *     }
 * \endparblock
@@ -66,11 +66,11 @@ function wsync_get_html($url, $timeout = 30){
 function wsync_insert_by_url($url, $config = Null){
     $url = wsync_check_wx_url($url);
     if (!$url) {
-            return array('post_id' => -1, 'err_msg' => 'url does not contain mp.weixin.qq.com');
+            return array('status_code' => -1, 'err_msg' => 'url does not contain mp.weixin.qq.com');
     }
     $html = wsync_get_html($url);
     if (!$html) {
-        return array('post_id' => -2, 'err_msg' => 'cannot get any message from '. $url);
+        return array('status_code' => -2, 'err_msg' => 'cannot get any message from '. $url);
     }
     return wsync_insert_by_html($html, $config);
 }
@@ -85,7 +85,7 @@ function wsync_insert_by_html($html, $config = Null){
     preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
     // make sure the title of the article exists
     if (count($matches)==0) {
-        return array('post_id' => -3, 'err_msg' => 'cannot get title from html');
+        return array('status_code' => -3, 'err_msg' => 'cannot get title from html');
     }
     $title = trim($matches[2]);
     // check whether the title is duplicate. If duplicate, return
@@ -95,7 +95,7 @@ function wsync_insert_by_html($html, $config = Null){
         if(strlen(get_post($post_id)->post_content)==0){
             return wsync_set_image($html, $post_id, $config);            
         }
-        return array('post_id' => $post_id, 'err_msg' => 'the article is already in the database');
+        return array('status_code' => $post_id, 'err_msg' => 'the article is already in the database');
     }
     // publish date
     $changePostTime = isset($config['changePostTime']) && $config['changePostTime'];
@@ -150,7 +150,7 @@ function wsync_insert_by_html($html, $config = Null){
     );
     $postId = wp_insert_post($post);
     if(is_wp_error($postId)){
-        return array('post_id' => -8, 'err_msg' => $postId->get_error_message());
+        return array('status_code' => -8, 'err_msg' => $postId->get_error_message());
     }
     return wsync_set_image($html, $postId, $config);
 }
@@ -159,7 +159,7 @@ function wsync_insert_by_html($html, $config = Null){
 //! \param  postId post Id
 //! \param image_name image_name to be checked
 //! \return  $status
-//! `{'post_id':$postId, 'err_msg':$err_msg}`
+//! `{'status_code':$postId, 'err_msg':$err_msg}`
 //! if the image exists, set $postId = image attachment id, otherwise set postId = 0
 function wsync_check_image_exists($postId, $image_name){
     $media_array_unattached = get_children(array(
@@ -171,10 +171,10 @@ function wsync_check_image_exists($postId, $image_name){
         $attached_image_id = $media_object->ID;
         $relative_file_path = wp_get_attachment_metadata($attached_image_id)['file'];
         if(strstr(basename($relative_file_path), $image_name)){
-            return array('post_id' => $attached_image_id, 'err_msg' => 'image already exists');
+            return array('status_code' => $attached_image_id, 'err_msg' => 'image already exists');
         }
 	}
-    return array('post_id' => 0, 'err_msg' => '');
+    return array('status_code' => 0, 'err_msg' => '');
 }
 
 //! \brief  guess the image extension from the url
@@ -206,7 +206,7 @@ function wsync_get_image_name($url, $prefix, $extension_=Null){
 //! \param  $url: wechat image original url
 //! \param  $postId: post Id
 //! \return $status
-//! `status = {'post_id':$postId, 'err_msg':$err_msg}`
+//! `status = {'status_code':$postId, 'err_msg':$err_msg}`
 function wsync_upload_image($url, $postId, $image_name = Null){
     if($image_name == Null){
 		$prefixName = get_option('wsync_image_name_prefix', 'ws-plugin-');
@@ -216,7 +216,7 @@ function wsync_upload_image($url, $postId, $image_name = Null){
         $fileName = $image_name;
     }
     $return_array = wsync_check_image_exists($postId, explode('.', $fileName)[0]);
-    $r_post_id = $return_array['post_id'];
+    $r_post_id = $return_array['status_code'];
     if($r_post_id > 0){
         if(wp_get_post_parent_id($r_post_id) ==0){
             wp_update_post($r_post_id, array('post_parent' => $postId));
@@ -233,10 +233,10 @@ function wsync_upload_image($url, $postId, $image_name = Null){
 	    $return_obj = media_handle_sideload($fileArr, $postId);
             @unlink(tmpFile);
             if (!is_wp_error($return_obj)) { // upload sucessfully
-                return array('post_id' => $return_obj, 'err_msg' => 'upload successfully');
+                return array('status_code' => $return_obj, 'err_msg' => 'upload successfully');
 	    }
             else{ // upload failed, $return_obj is instance of WP_Error
-                return array('post_id' => -6, 'err_msg' => $return_obj->get_error_message(), 'err_url' => $url);
+                return array('status_code' => -6, 'err_msg' => $return_obj->get_error_message(), 'err_url' => $url);
             }
         }
         else{ // image already exists
@@ -245,22 +245,22 @@ function wsync_upload_image($url, $postId, $image_name = Null){
         }
 	}
     else{
-        return array('post_id' => -5, 'err_msg' => 'download image failed');
+        return array('status_code' => -5, 'err_msg' => 'download image failed');
     }
 }
 //! \brief: set the thumbnail image for the specified post, called by ::wsync_set_image
 function wsync_set_feature_image($postId, $feature_image_url, $imageName = Null){
     if(has_post_thumbnail($postId)){
-        return array('post_id' => get_post_thumbnail_id($postId), 'err_msg' => 'post already has thumbnail');
+        return array('status_code' => get_post_thumbnail_id($postId), 'err_msg' => 'post already has thumbnail');
     }
     $return_array = wsync_upload_image($feature_image_url, $postId, $imageName);
-    if($return_array['post_id'] > 0){
-        $post_meta_id = set_post_thumbnail($postId, $return_array['post_id']);
+    if($return_array['status_code'] > 0){
+        $post_meta_id = set_post_thumbnail($postId, $return_array['status_code']);
         if($post_meta_id == 0){
-            return array('post_id' => $post_meta_id, 'err_msg' => 'set post thumbnail failed');
+            return array('status_code' => $post_meta_id, 'err_msg' => 'set post thumbnail failed');
         }
         else{
-            return array('post_id' => $post_meta_id, 'err_msg' => '');
+            return array('status_code' => $post_meta_id, 'err_msg' => '');
         }
     }
     else{
@@ -269,7 +269,7 @@ function wsync_set_feature_image($postId, $feature_image_url, $imageName = Null)
 }
 //! \brief  extract image urls from html, and download it to local file system, update image url in postId->postContent
 //! \param  $html: raw html text, $postId: post Id
-//! \return  status = {'post_id':$postId, 'err_msg':$err_msg}
+//! \return  status = {'status_code':$postId, 'err_msg':$err_msg}
 function wsync_set_image($html, $postId, $config = Null){
     // set featured image
     $setFeatureImage = isset($config['setFeatureImage']) ? $config['setFeatureImage'] : true;
@@ -303,7 +303,7 @@ function wsync_set_image($html, $postId, $config = Null){
 function wsync_insert_by_urls($urls, $config) {
     foreach ($urls as $url) {
         $return_array = wsync_insert_by_url($url, $config);
-        if($return_array['post_id'] <= 0)
+        if($return_array['status_code'] <= 0)
             return $return_array;
     }
     return $return_array;
@@ -315,7 +315,7 @@ function wsync_resolve_bg_image(&$content, $postId){
     while(count($matches)==2){
         $image_url = $matches[1];
         $return_array = wsync_upload_image($image_url, $postId);
-        $id = $return_array['post_id'];
+        $id = $return_array['status_code'];
         $imageInfo = wp_get_attachment_image_src($id, 'full');
         $src       = $imageInfo[0];   
         $content = preg_replace($re, 'background-image: url(&qquot;'. $src . '&qquot;)', $content, 1);
@@ -355,7 +355,7 @@ function wsync_download_image($postId, $dom, $config = Null) {
         }
         $src = preg_replace('/^\/\//', 'http://', $src, 1);
         $return_array = wsync_upload_image($src, $postId);
-        $id = $return_array['post_id'];
+        $id = $return_array['status_code'];
         if($id < 0){
             if($config['debug']){
                 $return_array['article_id'] = $postId;
@@ -390,8 +390,8 @@ function wsync_download_image($postId, $dom, $config = Null) {
     );
     $return_postID = wp_update_post($postArray);
     if(is_wp_error($return_postID)){
-        return array('post_id' => -7, 'err_msg' => $return_postID->get_error_message());
+        return array('status_code' => -7, 'err_msg' => $return_postID->get_error_message());
     }
-    return array('post_id' => $postId, 'err_msg' => 'create post successfully');    
+    return array('status_code' => $postId, 'err_msg' => 'create post successfully');    
 }
 ?>

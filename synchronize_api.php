@@ -44,7 +44,7 @@ function wsync_get_history_url(){
     list($err, $data) = $api->get_material_count();
     // each time maximal 20 news collection fetch is allowed
     if($err){
-        return array('post_id' => -1*$err->errcode, 'err_msg' => $err->errmsg);
+        return array('status_code' => -1*$err->errcode, 'err_msg' => $err->errmsg);
     }
     $offset = 0;
     
@@ -56,7 +56,7 @@ function wsync_get_history_url(){
     return $url_list;
 }
 
-function wsync_get_history_url_by_offset(&$url_list, $offset, $num = 20, $api = null){
+function wsync_get_history_url_by_offset($offset, $num = 20, $api = null){
     if($api == null){
         $api = new Api(
             array(
@@ -67,7 +67,11 @@ function wsync_get_history_url_by_offset(&$url_list, $offset, $num = 20, $api = 
             )
         );    
     }
+    $url_list = array(); 
     list($err, $material) = $api->get_materials('news', $offset, $num);
+    if($err){
+        return array('status_code' => -1*$err->errcode, 'err_msg' => $err->errmsg);
+    }
     // extract urls of each article from $material list and append it to an array
     for($i=0; $i<count($material->item); $i++){ //
         $newsync_item = $material->item[$i]->content->newsync_item;
@@ -75,6 +79,7 @@ function wsync_get_history_url_by_offset(&$url_list, $offset, $num = 20, $api = 
             $url = $newsync_item[$j]->url;
             array_push($url_list, $url);
         }            
-    }    
+    }
+    return array('status_code' => 0, 'err_msg' => '', 'data' => $url_list);
 }
 ?>

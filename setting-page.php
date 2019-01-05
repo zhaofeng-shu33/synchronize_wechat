@@ -103,7 +103,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
              var previous_value = wsync_console.val();
              var data_json = JSON.parse(data);
              var extra_info = '';
-             if(data_json['post_id'] < 0 && wsync_is_debug)
+             if(data_json['status_code'] < 0 && wsync_is_debug)
                 extra_info = '*' + url;
              wsync_console.val(previous_value  + data + extra_info + "\n");
              var row = parseInt(wsync_console.attr("rows"));
@@ -149,13 +149,18 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             timeout: 35000,
             data: data_to_sent,
             success: function(data, textStatus, jqXHR){
-                var result_array = JSON.parse(data);
+                var return_array = JSON.parse(data);
                 var previous_value = wsync_console.val();
-                wsync_console.val(previous_value + "get urls : " + result_array.length + "\n");
+                if(return_array.status_code < 0){
+                    wsync_console.val(previous_value + data + "\n");
+                    return
+                }
+                var url_list = return_array.data;
+                wsync_console.val(previous_value + "get urls : " + url_list.length + "\n");
                 var row = parseInt(wsync_console.attr("rows"));
                 wsync_console.attr("rows", row+1);
                 // issue new requests for each url in result_array
-                if(result_array.length == 0)
+                if(url_list.length == 0)
                     wsync_get_newsync_termination = true;
                 else{
                     wsync_url_list = wsync_url_list.concat(result_array);
