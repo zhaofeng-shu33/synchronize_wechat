@@ -122,7 +122,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         }           
         })        
     }
-    var submit_multiple = function(){
+    var ws_submit_multiple = function(){
         var submitted_length = ws_url_list.length;
         for(var i = 0; i < Math.min(5, submitted_length); i++){ 
             var url = ws_url_list.pop();
@@ -152,7 +152,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                     ws_get_news_termination = true;
                 else{
                     ws_url_list = ws_url_list.concat(result_array);
-                    submit_multiple();                    
+                    ws_submit_multiple();                    
                 }                
             },
             error: function(jqXHR, textStatus, errorThrown){
@@ -167,7 +167,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
        ws_console.attr("style", "display:block");
        if(ws_url_list_string.length>0){
            ws_url_list = ws_url_list_string.split("\n");
-           submit_multiple();
+           ws_submit_multiple();
        }
        else{
            ws_get_news();

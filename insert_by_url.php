@@ -179,7 +179,7 @@ function ws_check_image_exists($postId, $image_name){
 //! \brief  guess the image extension from the url
 //! \param  $url: image url
 //! \return  extension name with the dot
-function _ws_get_image_extension_from_url($url){
+function ws_get_image_extension_from_url($url){
   $extension = strstr(basename(explode('?', $url)[0]), '.');
   if($extension == false){
       preg_match('/wx_fmt=([a-z]+)/', $url, $matches);
@@ -193,9 +193,9 @@ function _ws_get_image_extension_from_url($url){
 //! \param  $url: absolute url of the image file
 //! \param  $prefix: prefix to prepend before the image name
 //! \return  image file name, no error handling.
-function _ws_get_image_name($url, $prefix, $extension_=Null){
+function ws_get_image_name($url, $prefix, $extension_=Null){
     $check_sum = sha1($url);
-    $extension = _ws_get_image_extension_from_url($url);
+    $extension = ws_get_image_extension_from_url($url);
     if($extension == false)
         $extension = '.jpeg';
 	$fileName = $prefix  . $check_sum . $extension;
@@ -209,7 +209,7 @@ function _ws_get_image_name($url, $prefix, $extension_=Null){
 function ws_upload_image($url, $postId, $image_name = Null){
     if($image_name == Null){
 		$prefixName = get_option('ws_image_name_prefix', 'ws-plugin-');
-        $fileName = _ws_get_image_name($url, $prefixName);
+        $fileName = ws_get_image_name($url, $prefixName);
     }
     else{
         $fileName = $image_name;
