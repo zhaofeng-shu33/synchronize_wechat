@@ -24,8 +24,9 @@ function sync_wechat_admin_menu(){
     add_action('admin_init', 'sync_wechat_register_settings');
 }
 
-//! \brief register setting data for persistent storage
+//! \brief register setting data for persistent storage and create cache directory
 function sync_wechat_register_settings(){
+
     register_setting('sync_wechat-settings-group', 'appid');
     register_setting('sync_wechat-settings-group', 'appsecret');
     add_option('access_token');
