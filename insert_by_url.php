@@ -167,9 +167,15 @@ function sync_wechat_check_image_exists($postId, $image_name){
         'post_mime_type' => 'image'
         ));
     $media_array = array_merge($media_array_unattached, get_attached_media('image', $postId));
+    
 	foreach ($media_array as $media_object) {
         $attached_image_id = $media_object->ID;
-        $relative_file_path = wp_get_attachment_metadata($attached_image_id)['file'];
+        try{
+            $relative_file_path = wp_get_attachment_metadata($attached_image_id)['file'];
+        }
+        catch(Exception $e){ //  wp_get_attachment_metadata($attached_image_id) may be empty, pass this case
+            continue;
+        }
         if(strstr(basename($relative_file_path), $image_name)){
             return array('status_code' => $attached_image_id, 'err_msg' => 'image already exists');
         }

@@ -26,8 +26,8 @@ function sync_wechat_admin_menu(){
 
 //! \brief register setting data for persistent storage and create cache directory
 function sync_wechat_register_settings(){
-    if(!file_exists(__DIR__ . 'asset')){
-        mkdir(__DIR__ . 'asset');
+    if(!file_exists(__DIR__ . '/asset')){
+        mkdir(__DIR__ . '/asset');
     }
     register_setting('sync_wechat-settings-group', 'appid');
     register_setting('sync_wechat-settings-group', 'appsecret');
