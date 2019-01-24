@@ -10,9 +10,9 @@ require_once('wechat_synchronize.php');
 
 class UtilityTest extends TestCase
 {
-    public function test_wsync_split_url(){
+    public function test_sync_wechat_split_url(){
         $url_str = "http://wordpress.org/ 123\nhttp://wordpress.org/124";
-        $url_list = wsync_split_url($url_str);
+        $url_list = sync_wechat_split_url($url_str);
         $this->assertSame($url_list[0],"http://wordpress.org/%20123");
         $this->assertSame($url_list[1],"http://wordpress.org/124");
     }

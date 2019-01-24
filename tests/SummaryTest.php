@@ -23,7 +23,7 @@ class SummaryTest extends TestCase
             return $this->postId;
         $this->postId = post_exists($this->post_title);
         if($this->postId == 0){
-            $return_array = wsync_insert_by_url($this->webpage_url);
+            $return_array = sync_wechat_insert_by_url($this->webpage_url);
             $this->postId = $return_array['post_id'];
         }
         return $this->postId;

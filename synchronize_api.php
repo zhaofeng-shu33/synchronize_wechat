@@ -14,7 +14,7 @@ use Gaoming13\WechatPhpSdk\Utils\HttpCurl;
  * @param: void
  * @return valid access token string
  */
-function wsync_get_access_token(){
+function sync_wechat_get_access_token(){
   // notice that the access_token is the serialized json string containing the expired time (UTC)
     return get_option('access_token');
 }
@@ -24,7 +24,7 @@ function wsync_get_access_token(){
  * @param: access token string
  * @return void
  */
-function wsync_save_access_token($token){
+function sync_wechat_save_access_token($token){
     update_option('access_token', $token);
 }
 
@@ -32,13 +32,13 @@ function wsync_save_access_token($token){
  * @param: valid access token
  * @return url list of current wechat account prior to current date
  */
-function wsync_get_history_url(){
+function sync_wechat_get_history_url(){
     $api = new Api(
 	    array(
             'appId' => get_option('appid'),
             'appSecret'	=> get_option('appsecret'),
-            'get_access_token' => 'wsync_get_access_token',
-            'save_access_token' => 'wsync_save_access_token'
+            'get_access_token' => 'sync_wechat_get_access_token',
+            'save_access_token' => 'sync_wechat_save_access_token'
         )
     );
     list($err, $data) = $api->get_material_count();
@@ -50,7 +50,7 @@ function wsync_get_history_url(){
     
     $url_list = array();
     while($offset < $data->news_count){ //
-        $return_array = wsync_get_history_url_by_offset($offset, 20, $api);
+        $return_array = sync_wechat_get_history_url_by_offset($offset, 20, $api);
         if($return_array['status_code'] >=0){
             array_push($url_list, $return_array['data']);
         }
@@ -59,14 +59,14 @@ function wsync_get_history_url(){
     return $url_list;
 }
 
-function wsync_get_history_url_by_offset($offset, $num = 20, $api = null){
+function sync_wechat_get_history_url_by_offset($offset, $num = 20, $api = null){
     if($api == null){
         $api = new Api(
             array(
                 'appId' => get_option('appid'),
                 'appSecret'	=> get_option('appsecret'),
-                'get_access_token' => 'wsync_get_access_token',
-                'save_access_token' => 'wsync_save_access_token'
+                'get_access_token' => 'sync_wechat_get_access_token',
+                'save_access_token' => 'sync_wechat_save_access_token'
             )
         );    
     }

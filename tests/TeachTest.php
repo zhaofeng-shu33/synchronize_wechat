@@ -20,32 +20,32 @@ class TeachTest extends TestCase
     private $html_file_name = 'asset/teach.txt';
     private function get_image()
     {
-        return wsync_upload_image($this->image_url, 1, $this->image_name);    
+        return sync_wechat_upload_image($this->image_url, 1, $this->image_name);    
     }
-    public function test_wsync_publish_date(){
+    public function test_sync_wechat_publish_date(){
         $html = fetch_html($this->html_file_name, $this->webpage_url);
-        $pd = wsync_get_publish_date($html);
+        $pd = sync_wechat_get_publish_date($html);
         $this->assertTrue(strstr($pd, $this->publish_date)!=Null);
     }
     /**
      * @group local
      */
-    public function test_wsync_insert_by_html_false(){
+    public function test_sync_wechat_insert_by_html_false(){
         $html = fetch_html($this->html_file_name, $this->webpage_url);
         $html_remove_title = str_replace('msg_title', 'title_msg', $html);
-        $return_array = wsync_insert_by_html($html_remove_title);
+        $return_array = sync_wechat_insert_by_html($html_remove_title);
         $this->assertSame($return_array['status_code'], -3);
 
         $html_change_title = preg_replace('/msg_title = "([^\"]+)"/', 'msg_title = "Hello world!"', $html);
-        $return_array = wsync_insert_by_html($html_change_title);
+        $return_array = sync_wechat_insert_by_html($html_change_title);
         $this->assertSame($return_array['err_msg'], 'the article is already in the database');
     }
     /**
      * @group local
      */
-    public function test_wsync_insert_by_html_true(){
+    public function test_sync_wechat_insert_by_html_true(){
         $html = fetch_html($this->html_file_name, $this->webpage_url);
-        $return_array = wsync_insert_by_html($html, array('postStatus' => 'publish'));
+        $return_array = sync_wechat_insert_by_html($html, array('postStatus' => 'publish'));
         $pid = $return_array['status_code'];
         $this->assertTrue($pid > 0);
     }
@@ -54,84 +54,84 @@ class TeachTest extends TestCase
      */
     public function test_check_wx_url()
     {
-        $this->assertSame(wsync_check_wx_url($this->webpage_url), $this->webpage_url);
-        $this->assertSame(wsync_check_wx_url('http://baidu.com'),"");
+        $this->assertSame(sync_wechat_check_wx_url($this->webpage_url), $this->webpage_url);
+        $this->assertSame(sync_wechat_check_wx_url('http://baidu.com'),"");
     }
 
     /**
      * @group network
      */
-    public function test_wsync_insert_by_url_false()
+    public function test_sync_wechat_insert_by_url_false()
     {
-        $return_array = wsync_insert_by_url('http://baidu.com');        
+        $return_array = sync_wechat_insert_by_url('http://baidu.com');        
         $this->assertSame($return_array['status_code'], -1);
 
-        $return_array = wsync_insert_by_url(str_replace('Yu','uY',$this->webpage_url)); 
+        $return_array = sync_wechat_insert_by_url(str_replace('Yu','uY',$this->webpage_url)); 
         $this->assertSame($return_array['status_code'], -3);
     }
-    public function test_wsync_insert_by_url_true()
+    public function test_sync_wechat_insert_by_url_true()
     {
-        $return_array = wsync_insert_by_url($this->webpage_url);   
+        $return_array = sync_wechat_insert_by_url($this->webpage_url);   
         $this->assertTrue($return_array['status_code'] > 0);
     }
     /**
      * @group network
      */
-    public function test_wsync_upload_image_false()
+    public function test_sync_wechat_upload_image_false()
     {
         $image_url_false = str_replace('kNe', 'eNk', $this->image_url);
 
-        $return_array = wsync_upload_image($image_url_false, 1);
+        $return_array = sync_wechat_upload_image($image_url_false, 1);
         $this->assertSame($return_array['status_code'], -5);
     }
     /**
      * @group local
      */
-    public function test_wsync_upload_image_true()
+    public function test_sync_wechat_upload_image_true()
     {
         $return_array = self::get_image();
         $this->assertTrue($return_array['status_code'] > 0);
     }
-    public function test_wsync_upload_image_checksum()
+    public function test_sync_wechat_upload_image_checksum()
     {
-        $return_array = wsync_upload_image($this->checksum_image_url, 1);
+        $return_array = sync_wechat_upload_image($this->checksum_image_url, 1);
         $this->assertTrue($return_array['status_code'] > 0);
-        $return_array = wsync_upload_image($this->checksum_image_url, 1);
+        $return_array = sync_wechat_upload_image($this->checksum_image_url, 1);
         $this->assertSame($return_array['err_msg'], 'image already exists');
 
     }
-    public function test_wsync_wsync_get_image_name()
+    public function test_sync_wechat_sync_wechat_get_image_name()
     {
         // use this file for testing
-        $image_name = wsync_get_image_name($this->image_url, '');
+        $image_name = sync_wechat_get_image_name($this->image_url, '');
         $this->assertSame($image_name,'85463a5165d4e4bb33579bff7cf005b162ec8ac0.jpeg');
     }
     /**
      * @group local
      */
-    public function test_wsync_check_image_exists()
+    public function test_sync_wechat_check_image_exists()
     {
         self::get_image();
-        $return_array = wsync_check_image_exists(1, $this->image_name);
+        $return_array = sync_wechat_check_image_exists(1, $this->image_name);
         $this->assertSame($return_array['err_msg'], 'image already exists');
 
-        $return_array = wsync_check_image_exists(1, 'Picture2.png');
+        $return_array = sync_wechat_check_image_exists(1, 'Picture2.png');
         $this->assertSame($return_array['status_code'], 0);
     }
     
-    public function test_wsync_set_feature_image()
+    public function test_sync_wechat_set_feature_image()
     {
-        $return_array = wsync_set_feature_image(1, $this->image_url, $this->image_name);
+        $return_array = sync_wechat_set_feature_image(1, $this->image_url, $this->image_name);
         $this->assertTrue($return_array['status_code'] > 0);
     }
-    public function test_wsync_downloadImage()
+    public function test_sync_wechat_downloadImage()
     {
         $html = fetch_html($this->html_file_name, $this->webpage_url);
-        $return_array = wsync_insert_by_html($html);
+        $return_array = sync_wechat_insert_by_html($html);
         $this->assertTrue($return_array['status_code'] > 0);
 
         $postId = $return_array['status_code'];
-        $return_array = wsync_set_image($html, $return_array['status_code']);
+        $return_array = sync_wechat_set_image($html, $return_array['status_code']);
         $this->assertTrue($return_array['status_code'] > 0);
     }
 }
