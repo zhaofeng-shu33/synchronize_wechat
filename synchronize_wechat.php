@@ -41,12 +41,13 @@ function sync_wechat_plugin_options(){
 
 //! \brief  basic config setting function
 function sync_wechat_set_config(){
-    $changePostTime = isset($_POST['change_post_time']) && $_POST['change_post_time'] == 'true';
-    $postStatus     = isset($_POST['post_status']) && in_array($_POST['post_status'], array('publish', 'pending', 'draft')) ?
+
+    $changePostTime = isset($_POST['change_post_time']) && sanitize_text_field($_POST['change_post_time']) == 'true';
+    $postStatus     = isset($_POST['post_status']) && in_array(sanitize_text_field($_POST['post_status']), array('publish', 'pending', 'draft')) ?
                                             $_POST['post_status'] : 'publish';
-    $keepStyle      = isset($_POST['keep_style']) && $_POST['keep_style'] == 'keep';
-    $keepSource      = isset($_POST['keep_source']) ? $_POST['keep_source'] == 'keep': true;    
-	$debug          = isset($_POST['debug']) ? $_POST['debug'] == 'on' : true;
+    $keepStyle      = isset($_POST['keep_style']) && sanitize_text_field($_POST['keep_style']) == 'keep';
+    $keepSource      = isset($_POST['keep_source']) ? sanitize_text_field($_POST['keep_source']) == 'keep': true;    
+	$debug          = isset($_POST['debug']) ? sanitize_text_field($_POST['debug']) == 'on' : true;
     $config = array(
 		'changePostTime'  => $changePostTime,
 		'postStatus'   => $postStatus,
