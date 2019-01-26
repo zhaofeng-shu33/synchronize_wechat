@@ -1,5 +1,7 @@
 # synchronize wechat
-synchronize wechat post articles to wordpress website
+![](icon-256x256.png)
+synchronize wechat post articles to wordpress website,
+see [plugins](https://wordpress.org/plugins/synchronize-wechat/) for release.
 
 ## Introduction
 WeChat is the most popular instant message tools in China. Nowadays, wechat posts are very common and people read traditional webpages in less frequency. 
