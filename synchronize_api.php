@@ -75,12 +75,12 @@ function sync_wechat_split_url($url_list_string){
 * @return $timestamp time stamp of the latest post article
 */
 function sync_wechat_get_latest_post_publish_date(){
-    $arg = array(
+    $args = array(
         'numberposts' => 1,
         'post_type' => 'post'
     );
     $result_posts = wp_get_recent_posts($args);
-    $latest_post_date_string = $result_posts[0]->post_date;
+    $latest_post_date_string = $result_posts[0]['post_date'];
     return strtotime($latest_post_date_string);
 }
 ?>
