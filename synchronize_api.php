@@ -77,9 +77,6 @@ function sync_wechat_get_history_url_by_offset($offset, $max_num = 20, $api = nu
 
 function sync_wechat_split_url($url_list_string){
     $url_list = explode("\n", $url_list_string);
-    foreach($url_list as &$url){
-        $url = esc_url($url);
-    }
     return $url_list;
 }
 
