@@ -4,7 +4,7 @@ Plugin Name: synchronize wechat
 Plugin URI: https://github.com/zhaofeng-shu33/synchronize_wechat
 Description: synchronize wechat articles to wordpress website
 Author: zhaofeng-shu33
-Version: 0.4
+Version: 0.4.2
 Author URI: https://github.com/zhaofeng-shu33
 */
 /**
@@ -68,7 +68,7 @@ function sync_wechat_split_url($url_list_string){
 }
 //! \brief ajax callback main function
 function sync_wechat_process_request(){
-    $sync_history = isset($_POST['sync_wechat_history']) ? $_POST['sync_wechat_history'] == 'sync_wechat_Yes' : false;
+    $sync_history = isset($_POST['sync_wechat_history']) ? sanitize_text_field($_POST['sync_wechat_history']) == 'sync_wechat_Yes' : false;
     if($sync_history){
         if(isset($_POST['offset'])){
             $num = isset($_POST['num']) ? intval($_POST['num']) : 20;
@@ -78,8 +78,8 @@ function sync_wechat_process_request(){
             $offset = intval($_POST['offset']);
             $return_array = sync_wechat_get_history_url_by_offset($offset, $num);            
         }
-        else{ //if no offset parameter, get the whole history url list
-            $return_array = sync_wechat_get_history_url();
+        else{ //if no offset parameter, raise the error
+            $return_array = array('status_code' => -4, 'err_msg' => 'no offset parameter is given');  
         }
     }
     else{ //    don't synchronize history articles, read url list from post data

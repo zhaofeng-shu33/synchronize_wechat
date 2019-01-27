@@ -29,36 +29,10 @@ function sync_wechat_save_access_token($token){
 }
 
 /**
- * @param: valid access token
- * @return url list of current wechat account prior to current date
+ * @param: $offset
+ * @param: $num number of items to get
+ * @return $return_array
  */
-function sync_wechat_get_history_url(){
-    $api = new Api(
-	    array(
-            'appId' => get_option('appid'),
-            'appSecret'	=> get_option('appsecret'),
-            'get_access_token' => 'sync_wechat_get_access_token',
-            'save_access_token' => 'sync_wechat_save_access_token'
-        )
-    );
-    list($err, $data) = $api->get_material_count();
-    // each time maximal 20 news collection fetch is allowed
-    if($err){
-        return array('status_code' => -1*$err->errcode, 'err_msg' => $err->errmsg);
-    }
-    $offset = 0;
-    
-    $url_list = array();
-    while($offset < $data->news_count){ //
-        $return_array = sync_wechat_get_history_url_by_offset($offset, 20, $api);
-        if($return_array['status_code'] >=0){
-            array_push($url_list, $return_array['data']);
-        }
-        $offset += 20;
-    }
-    return $url_list;
-}
-
 function sync_wechat_get_history_url_by_offset($offset, $num = 20, $api = null){
     if($api == null){
         $api = new Api(
@@ -83,6 +57,19 @@ function sync_wechat_get_history_url_by_offset($offset, $num = 20, $api = null){
             array_push($url_list, $url);
         }            
     }
-    return array('status_code' => 0, 'err_msg' => '', 'data' => $url_list);
+    $latest_update_time = $material->item[0]->update_time;
+    return array('status_code' => 0, 'err_msg' => '',
+        'data' => array('url_list' => $url_list, 'latest_update_time' => $latest_update_time)
+    );
+}
+
+function sync_wechat_get_latest_post_publish_date(){
+    $arg = array(
+        'numberposts' => 1,
+        'post_type' => 'post'
+    );
+    $result_posts = wp_get_recent_posts($args);
+    $latest_post_date_string = $result_posts[0]->post_date;
+    return $latest_post_date_string;
 }
 ?>

@@ -156,7 +156,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                     sync_wechat_console_writeline(data);
                     return
                 }
-                var url_list = return_array.data;
+                var url_list = return_array.data.url_list;
                 sync_wechat_console_writeline("get urls : " + url_list.length);
                 var row = parseInt(sync_wechat_console.attr("rows"));
                 sync_wechat_console.attr("rows", row+1);
