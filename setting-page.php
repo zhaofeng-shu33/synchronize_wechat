@@ -82,7 +82,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
     var sync_wechat_url_global_id = 0;
     var sync_wechat_global_offset = 0;
     var sync_wechat_is_debug = false;
-    var sync_wechat_get_nesync_wechat_termination = false;
+    var sync_wechat_get_url_list_termination = false;
     var sync_wechat_console = jQuery("#console");
     function sync_wechat_submit_single(url){
         var data_ = {
@@ -110,7 +110,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                      sync_wechat_submit_single(new_url);
                  }
                  else{
-                    if(jQuery('select[name="sync_wechat_history"]').val() == 'sync_wechat_Yes' && sync_wechat_get_nesync_wechat_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
+                    if(jQuery('select[name="sync_wechat_history"]').val() == 'sync_wechat_Yes' && sync_wechat_get_url_list_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
                         sync_wechat_get_news();
                  }
              },
@@ -158,16 +158,17 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                 }
                 var url_list = return_array.data.url_list;
                 sync_wechat_console_writeline("get urls : " + url_list.length);
-                var row = parseInt(sync_wechat_console.attr("rows"));
-                sync_wechat_console.attr("rows", row+1);
                 // issue new requests for each url in result_array
                 if(url_list.length == 0)
-                    sync_wechat_get_nesync_wechat_termination = true;
-                else if(sync_wechat_is_debug == false){
+                    sync_wechat_get_url_list_termination = true;
+                else if(sync_wechat_is_debug == false){ 
                     sync_wechat_url_list = sync_wechat_url_list.concat(url_list);
-                    sync_wechat_submit_multiple();                    
+                    sync_wechat_submit_multiple();  
+                    if(!return_array.data.need_update){
+                        sync_wechat_get_url_list_termination = true;
+                    }                                    
                 }                
-                else{
+                else{ // debug mode is on, do not issue submit multiple request
                     sync_wechat_console_writeline(url_list.join("\n"), url_list.length);
                 }                
             },

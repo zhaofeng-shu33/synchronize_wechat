@@ -30,10 +30,11 @@ function sync_wechat_save_access_token($token){
 
 /**
  * @param: $offset
- * @param: $num number of items to get
+ * @param: $max_num number of items to get
+ * @param: $date_check if True, do the date check and may return less urls.
  * @return $return_array
  */
-function sync_wechat_get_history_url_by_offset($offset, $num = 20, $api = null){
+function sync_wechat_get_history_url_by_offset($offset, $max_num = 20, $api = null, $date_check = True){
     if($api == null){
         $api = new Api(
             array(
@@ -45,21 +46,32 @@ function sync_wechat_get_history_url_by_offset($offset, $num = 20, $api = null){
         );    
     }
     $url_list = array(); 
-    list($err, $material) = $api->get_materials('news', $offset, $num);
+    list($err, $material) = $api->get_materials('news', $offset, $max_num);
     if($err){
         return array('status_code' => -1*$err->errcode, 'err_msg' => $err->errmsg);
     }
+    $num_material_item = count($material->item);
+    $need_update = True;
+    if($date_check){
+        $latest_article_post_time = sync_wechat_get_latest_post_publish_date(); //timestamp
+        for($i=0; $i<count($material->item); $i++){
+            if($material->item[$i]->update_time <= $latest_article_post_time){
+                $num_material_item = $i;
+                $need_update = False;
+                break;
+            }
+        }
+    }
     // extract urls of each article from $material list and append it to an array
-    for($i=0; $i<count($material->item); $i++){ //
+    for($i = 0; $i < $num_material_item; $i++){ //
         $news_item = $material->item[$i]->content->news_item;
         for($j=0; $j<count($news_item); $j++){
             $url = $news_item[$j]->url;
             array_push($url_list, $url);
         }            
     }
-    $latest_update_time = $material->item[0]->update_time; //timestamp
     return array('status_code' => 0, 'err_msg' => '',
-        'data' => array('url_list' => $url_list, 'latest_update_time' => $latest_update_time)
+        'data' => array('url_list' => $url_list, 'need_update' => $need_update)
     );
 }
 
