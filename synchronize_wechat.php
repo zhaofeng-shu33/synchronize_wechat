@@ -59,13 +59,6 @@ function sync_wechat_set_config(){
     return $config;
 }
 
-function sync_wechat_split_url($url_list_string){
-    $url_list = explode("\n", $url_list_string);
-    foreach($url_list as &$url){
-        $url = esc_url($url);
-    }
-    return $url_list;
-}
 //! \brief ajax callback main function
 function sync_wechat_process_request(){
     $sync_history = isset($_POST['sync_wechat_history']) ? sanitize_text_field($_POST['sync_wechat_history']) == 'sync_wechat_Yes' : false;

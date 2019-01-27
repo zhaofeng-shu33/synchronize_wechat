@@ -57,12 +57,23 @@ function sync_wechat_get_history_url_by_offset($offset, $num = 20, $api = null){
             array_push($url_list, $url);
         }            
     }
-    $latest_update_time = $material->item[0]->update_time;
+    $latest_update_time = $material->item[0]->update_time; //timestamp
     return array('status_code' => 0, 'err_msg' => '',
         'data' => array('url_list' => $url_list, 'latest_update_time' => $latest_update_time)
     );
 }
 
+function sync_wechat_split_url($url_list_string){
+    $url_list = explode("\n", $url_list_string);
+    foreach($url_list as &$url){
+        $url = esc_url($url);
+    }
+    return $url_list;
+}
+
+/*
+* @return $timestamp time stamp of the latest post article
+*/
 function sync_wechat_get_latest_post_publish_date(){
     $arg = array(
         'numberposts' => 1,
@@ -70,6 +81,6 @@ function sync_wechat_get_latest_post_publish_date(){
     );
     $result_posts = wp_get_recent_posts($args);
     $latest_post_date_string = $result_posts[0]->post_date;
-    return $latest_post_date_string;
+    return strtotime($latest_post_date_string);
 }
 ?>
