@@ -2,32 +2,25 @@
 
 use PHPUnit\Framework\TestCase;
 
-define('ABSPATH', getenv("ABSPATH"));
-require_once(ABSPATH . 'wp-config.php');
-require_once(ABSPATH . 'wp-admin/includes/admin.php');
 require_once('insert_by_url.php');
+if(!class_exists('simple_html_dom_node')){
+	require_once("php-simple-html-dom/simple_html_dom.php");
+}
 
 require_once "test_utility.php";
 
 
 class VideoTest extends TestCase
 {
-    private $webpage_url = 'https://mp.weixin.qq.com/s?__biz=MjM5MDE1MzYzOQ==&mid=503012629&idx=1&sn=4dfdf212a620d461c9aae8f33742bb1f&chksm=3e46d3dd09315acb1d6b5ac56a444afeb6797069ccd91ceb00cb8ecf5d7a487ea1031e6b0744#rd';
-    private $html_file_name = 'asset/video.txt';
-    private $postId = Null;
-    private $post_title = '美在心灵||2018年暑假国际教育公益文化交流会活动简报';
-  
-    private function get_postId()
+   public function test_sync_wechat_process_video()
     {
-        if($this->postId)
-            return $this->postId;
-        $this->postId = post_exists($this->post_title);
-        if($this->postId == 0){
-            $return_array = sync_wechat_insert_by_url($this->webpage_url);
-            $this->postId = $return_array['post_id'];
-        }
-        return $this->postId;
-    }    
-        
+        $html_str = '<p><iframe class="video_iframe" data-vidtype="2" data-cover="http%3A%2F%2Fvpic.video.qq.com%2F65093407%2Fr1358irzpoh.png" allowfullscreen="" frameborder="0" data-ratio="1.3333333333333333" data-w="648" data-src="https://v.qq.com/iframe/preview.html?width=500&amp;height=375&amp;auto=0&amp;vid=r1358irzpoh"></iframe></p>'
+        $dom  = str_get_html($html_str);         
+        sync_wechat_process_video($dom);
+        $video = $dom->find('#video_iframe')[0];
+        $this->assertSame($video->getAttribute('src'), 'https://v.qq.com/iframe/preview.html?width=500&amp;height=375&amp;auto=0&amp;vid=r1358irzpoh');
+        $this->assertSame($video->getAttribute('width'), 500);
+        $this->assertSame($video->getAttribute('height'), 375);
+    }         
 }
 ?>

@@ -51,7 +51,7 @@ function sync_wechat_get_html($url, $timeout = 30){
 *           'keepSource'[bool, default:true]: whether the original source info is kept 
 *	    	'postCate'[choice,default:not_classcified]: the classification to put the article
 *           'setFeatureImage'[bool,default:true]: whether to set the feature image
-            'debug'[bool, default:true]: whether to turn on debug mode, debug mode will output more detailed information
+*           'debug'[bool, default:true]: whether to turn on debug mode, debug mode will output more detailed information
 *     }
 * \endparblock
 * \return $status
@@ -341,6 +341,22 @@ function sync_wechat_resolve_origin($dom){
     }
     $origin = trim(esc_html($origin));
     return $origin;
+}
+//! \brief resolve tencent video, add width, height, src attribute
+function sync_wechat_process_video(&$dom){
+    $videos            = $dom->find('#video_iframe');
+    foreach($videos as $video){
+            $src  = $video->getAttribute('data-src');
+            $video->setAttribute('src', $src);
+            preg_match('/width=([0-9]+)&amp;height=([0-9]+)/', $src, $matches);
+            if(count($matches) != 3) // avoid array index error
+                continue
+            $width = $matches[1];
+            $height = $matches[2];
+            $video->setAttribute('width', $width);
+            $video->setAttribute('height', $height);
+    }
+    return;
 }
 //! \brief download images in $dom, called by ::sync_wechat_set_image
 function sync_wechat_download_image($postId, $dom, $config = Null) {
