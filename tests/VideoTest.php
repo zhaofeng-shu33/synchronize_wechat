@@ -7,9 +7,6 @@ if(!class_exists('simple_html_dom_node')){
 	require_once("php-simple-html-dom/simple_html_dom.php");
 }
 
-require_once "test_utility.php";
-
-
 class VideoTest extends TestCase
 {
    public function test_sync_wechat_process_video()
