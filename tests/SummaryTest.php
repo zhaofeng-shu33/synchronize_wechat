@@ -2,7 +2,9 @@
 
 use PHPUnit\Framework\TestCase;
 
+if (! defined('ABSPATH')) {
 define('ABSPATH', getenv("ABSPATH"));
+}
 require_once(ABSPATH . 'wp-config.php');
 require_once(ABSPATH . 'wp-admin/includes/admin.php');
 require_once('insert_by_url.php');

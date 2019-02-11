@@ -350,7 +350,7 @@ function sync_wechat_process_video(&$dom){
             $video->setAttribute('src', $src);
             preg_match('/width=([0-9]+)&amp;height=([0-9]+)/', $src, $matches);
             if(count($matches) != 3) // avoid array index error
-                continue
+                continue;
             $width = $matches[1];
             $height = $matches[2];
             $video->setAttribute('width', $width);
