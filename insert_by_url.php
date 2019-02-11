@@ -293,14 +293,9 @@ function sync_wechat_set_image($html, $postId, $config = Null){
         }
         $imageDom->setAttribute('src', $dataSrc);
     }
-    // video cannot simply be done, tencent video api has not been documented
-    // this feature is not implemented.
-    $videoDoms = $dom->find('.video_iframe');
-    foreach ($videoDoms as $videoDom) {
-        $videoDom->clear();
-        // $dataSrc = $videoDom->getAttribute('data-src');
-        // $videoDom->setAttribute('src', $dataSrc);
-    }
+ 
+    sync_wechat_process_video($dom);
+    
     // images must be downloaded to local file system
     return sync_wechat_download_image($postId, $dom, $config);
 }
@@ -359,11 +354,11 @@ function sync_wechat_process_video(&$dom){
     }
     return;
 }
-//! \brief download images in $dom, called by ::sync_wechat_set_image
+//! \brief download all images in $dom, called by ::sync_wechat_set_image
 function sync_wechat_download_image($postId, $dom, $config = Null) {
 	$images            = $dom->find('img');
 	$centeredImage     = get_option('sync_wechat_image_centered', 'no') == 'yes';
-    sync_wechat_process_video($dom);
+    
     foreach ($images as $image) {
         $src  = $image->getAttribute('src');
         if (!$src) {
