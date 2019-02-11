@@ -344,13 +344,14 @@ function sync_wechat_resolve_origin($dom){
 }
 //! \brief resolve tencent video, add width, height, src attribute
 function sync_wechat_process_video(&$dom){
-    $videos            = $dom->find('#video_iframe');
+    $videos            = $dom->find('.video_iframe');
     foreach($videos as $video){
             $src  = $video->getAttribute('data-src');
             $video->setAttribute('src', $src);
             preg_match('/width=([0-9]+)&amp;height=([0-9]+)/', $src, $matches);
-            if(count($matches) != 3) // avoid array index error
+            if(count($matches) != 3){ // avoid array index error
                 continue;
+            }
             $width = $matches[1];
             $height = $matches[2];
             $video->setAttribute('width', $width);

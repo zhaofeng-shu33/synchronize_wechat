@@ -16,8 +16,8 @@ class VideoTest extends TestCase
         sync_wechat_process_video($dom);
         $video = $dom->find('.video_iframe')[0];
         $this->assertSame($video->getAttribute('src'), 'https://v.qq.com/iframe/preview.html?width=500&amp;height=375&amp;auto=0&amp;vid=r1358irzpoh');
-        $this->assertSame($video->getAttribute('width'), 500);
-        $this->assertSame($video->getAttribute('height'), 375);
+        $this->assertSame($video->getAttribute('width'), '500');
+        $this->assertSame($video->getAttribute('height'), '375');
     }         
 }
 ?>
