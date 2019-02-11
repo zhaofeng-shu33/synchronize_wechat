@@ -363,6 +363,7 @@ function sync_wechat_process_video(&$dom){
 function sync_wechat_download_image($postId, $dom, $config = Null) {
 	$images            = $dom->find('img');
 	$centeredImage     = get_option('sync_wechat_image_centered', 'no') == 'yes';
+    sync_wechat_process_video($dom);
     foreach ($images as $image) {
         $src  = $image->getAttribute('src');
         if (!$src) {
