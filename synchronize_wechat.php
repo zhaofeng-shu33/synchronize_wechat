@@ -62,6 +62,7 @@ function sync_wechat_set_config(){
 //! \brief ajax callback main function
 function sync_wechat_process_request(){
     $sync_history = isset($_POST['sync_wechat_history']) ? sanitize_text_field($_POST['sync_wechat_history']) == 'sync_wechat_Yes' : false;
+    $date_check = isset($_POST['sync_wechat_date_check']) ? sanitize_text_field($_POST['sync_wechat_date_check']) == 'Yes' : true;
     if($sync_history){
         if(isset($_POST['offset'])){
             $num = isset($_POST['num']) ? intval($_POST['num']) : 20;
@@ -69,7 +70,7 @@ function sync_wechat_process_request(){
                 $return_array = array('status_code' => -10, 'err_msg' => 'invalid num given');            
             }
             $offset = intval($_POST['offset']);
-            $return_array = sync_wechat_get_history_url_by_offset($offset, $num);            
+            $return_array = sync_wechat_get_history_url_by_offset($offset, $num, $date_check);            
         }
         else{ //if no offset parameter, raise the error
             $return_array = array('status_code' => -4, 'err_msg' => 'no offset parameter is given');  

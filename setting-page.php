@@ -70,6 +70,19 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         </select>
      </td>      
      </tr>
+    <tr>
+     <th scope="row"><label for="check_date">Check date</label></th>
+     <td>
+        <select name="check_date">
+                <option value="Yes" selected>Yes</option>
+                <option value="No">No</option>
+        </select>
+     </td>
+     <th scope="row"><label for="offset">Offset</label></th>
+     <td>
+         <input name="offset" type="number" step="1" value="0"/>
+     </td>      
+     </tr>     
      <tr>
      <textarea type="text" name="given_urls" class="large-text code" rows="3"></textarea>         
      </tr>
@@ -139,10 +152,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         sync_wechat_console.val(console_value + content + '\n');
     }
     function sync_wechat_get_news(){
+        // reset global offset
+        var offset_to_sent = parseInt(jQuery('input[name="offset"]').val())
+        // todo: alert the user that offset cannot be negative.
+        sync_wechat_global_offset = offset_to_sent >=0 ? offset_to_sent : 0;
         var data_to_sent = 
                    {'action':'sync_wechat_process_request',
                     'offset': sync_wechat_global_offset,
-                    'sync_wechat_history':jQuery('select[name="sync_wechat_history"]').val()
+                    'sync_wechat_history':jQuery('select[name="sync_wechat_history"]').val(),
+                    'sync_wechat_date_check': jQuery('select[name="check_date"]').val()
                    };
         sync_wechat_global_offset += 20;           
         jQuery.ajax({
