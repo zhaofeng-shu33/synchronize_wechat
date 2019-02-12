@@ -152,10 +152,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         sync_wechat_console.val(console_value + content + '\n');
     }
     function sync_wechat_get_news(){
-        // reset global offset
-        var offset_to_sent = parseInt(jQuery('input[name="offset"]').val())
-        // todo: alert the user that offset cannot be negative.
-        sync_wechat_global_offset = offset_to_sent >=0 ? offset_to_sent : 0;
+
         var data_to_sent = 
                    {'action':'sync_wechat_process_request',
                     'offset': sync_wechat_global_offset,
@@ -209,6 +206,10 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
            sync_wechat_submit_multiple();
        }
        else{
+            // reset global offset
+            var offset_to_sent = parseInt(jQuery('input[name="offset"]').val())
+            // todo: alert the user that offset cannot be negative.
+            sync_wechat_global_offset = offset_to_sent >=0 ? offset_to_sent : 0;           
            sync_wechat_get_news();
        }
     }); 
