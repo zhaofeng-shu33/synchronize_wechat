@@ -228,7 +228,7 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                         sync_wechat_get_url_list_termination = true;
                     }                                    
                 }                
-                else{ // debug mode is on, do not issue submit multiple request
+                if(sync_wechat_is_debug > 0){ // debug mode is on, do not issue submit multiple request
                     sync_wechat_console_writeline(url_list.join("\n"), url_list.length);
                 }                
             },
