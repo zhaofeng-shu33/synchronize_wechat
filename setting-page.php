@@ -94,7 +94,20 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 </div>
 </div>
 <textarea id="console" class="large-text code" rows="1" style="display:none"></textarea>
+<div id="dialog" title="Basic dialog">
+  <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+</div>
 <script>
+<?php 
+$wp_scripts = wp_scripts();
+$jquery_ui_ver = $wp_scripts->registered['jquery-ui-core']->ver;
+
+wp_enqueue_script('jquery-ui-dialog');
+wp_enqueue_style('jquery-ui-css', 'http://cdn.bootcss.com/jqueryui/' . $jquery_ui_ver . '/jquery-ui.min.css'
+);?>
+    jQuery(document).ready(function(){
+        jQuery("#dialog").dialog();
+    });
     jQuery("#expandControl").click(function () {
         var header = jQuery(this);
         var content = jQuery("#synchronize-table");
