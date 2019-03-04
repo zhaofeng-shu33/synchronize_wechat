@@ -19,8 +19,12 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
  </table>
 <?php submit_button(); ?>
 </form>
-<form id="url">
-<table class="form-table">
+<div id="url" style="display:flex;flex-direction:column;">
+<textarea type="text" name="given_urls" class="large-text code" rows="3" placeholder="Paste urls of articles here, one url per line..."></textarea>         
+<div>
+<button class="button button-primary" id="expandControl" style="margin-bottom:10px; margin-top:10px;">Advanced</button>
+</div>
+<table class="form-table" style="display:none;" id="synchronize-table">
     <tr>
      <th scope="row"><label for="sync_wechat_history">Get preivous articles</label></th>
      <td>
@@ -66,7 +70,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
      <td>
         <select name="debug">
                 <option value="off" selected>off</option>
-                <option value="on">on</option>
+                <option value="on">basic</option>
+                <option value="detail">detail</option>                
         </select>
      </td>      
      </tr>
@@ -83,20 +88,29 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
          <input name="offset" type="number" step="1" value="0"/>
      </td>      
      </tr>     
-     <tr>
-     <textarea type="text" name="given_urls" class="large-text code" rows="3"></textarea>         
-     </tr>
 </table>
-<?php submit_button("Synchronize"); ?>
-</form>
+<div>
+<button class="button button-primary" id="Synchronize" style="margin-bottom:10px;">Synchronize</button>
+</div>
+</div>
 <textarea id="console" class="large-text code" rows="1" style="display:none"></textarea>
 <script>
+    jQuery("#expandControl").click(function () {
+        var header = jQuery(this);
+        var content = jQuery("#synchronize-table");
+        content.slideToggle(500, function () {
+            header.text(function () {
+                return content.is(":visible") ? "Collapse" : "Advanced";
+            });
+        });
+    });
     var sync_wechat_url_list = [];
     var sync_wechat_url_global_id = 0;
     var sync_wechat_global_offset = 0;
-    var sync_wechat_is_debug = false;
+    var sync_wechat_is_debug = 0;
     var sync_wechat_get_url_list_termination = false;
     var sync_wechat_console = jQuery("#console");
+    var sync_wechat_submit_total_count = 0;
     function sync_wechat_submit_single(url){
         var data_ = {
             'action': 'sync_wechat_process_request',
@@ -115,8 +129,10 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
              success: function(data, textStatus, jqXHR){
                  var data_json = JSON.parse(data);
                  var extra_info = '';
-                 if(data_json['status_code'] < 0 && sync_wechat_is_debug)
+                 if(data_json['status_code'] < 0 && sync_wechat_is_debug == 2)
                     extra_info = '*' + url;
+                 if(data_json['status_code'] >= 0)
+                    sync_wechat_submit_total_count += 1; 
                  sync_wechat_console_writeline(data + extra_info)
                  var new_url = sync_wechat_url_list.pop();
                  if(new_url != undefined){
@@ -126,10 +142,14 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                     if(jQuery('select[name="sync_wechat_history"]').val() == 'sync_wechat_Yes' && sync_wechat_get_url_list_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
                         sync_wechat_get_news();
                  }
+                 if(sync_wechat_url_list.length == 0 && sync_wechat_is_debug == 0){
+                     // notify the user the job finished.
+                 }
+                     
              },
             error: function(jqXHR, textStatus, errorThrown){
                 sync_wechat_console_writeline(textStatus + '*'+ errorThrown);
-                if(sync_wechat_is_debug){
+                if(sync_wechat_is_debug == 2){
                     sync_wechat_console_writeline(url);
                     sync_wechat_console_writeline(jqXHR.responseText);
                 }
@@ -146,6 +166,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 
     //! content added to the console
     function sync_wechat_console_writeline(content, row_add = 1){
+        if(sync_wechat_is_debug == 0)
+            return
         var console_value = sync_wechat_console.val();
         var row = parseInt(sync_wechat_console.attr("rows"));
         sync_wechat_console.attr("rows", row + row_add);
@@ -169,14 +191,15 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                 var return_array = JSON.parse(data);
                 if(return_array.status_code < 0){
                     sync_wechat_console_writeline(data);
-                    return
+                    alert("Synchronize Error!");
+                    return;
                 }
                 var url_list = return_array.data.url_list;
                 sync_wechat_console_writeline("get urls : " + url_list.length);
                 // issue new requests for each url in result_array
                 if(url_list.length == 0)
                     sync_wechat_get_url_list_termination = true;
-                else if(sync_wechat_is_debug == false){ 
+                else if(sync_wechat_is_debug == 1){ 
                     sync_wechat_url_list = sync_wechat_url_list.concat(url_list);
                     sync_wechat_submit_multiple();  
                     if(!return_array.data.need_update){
@@ -190,17 +213,23 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             error: function(jqXHR, textStatus, errorThrown){
                 sync_wechat_console_writeline(textStatus + '*' + errorThrown);
                 sync_wechat_console_writeline("at global offset : " + (sync_wechat_global_offset - 20));
-                if(sync_wechat_is_debug){
+                if(sync_wechat_is_debug == 2){
                     sync_wechat_console_writeline(jqXHR.responseText);
+                }
+                else if(sync_wechat_is_debug == 0){
+                    alert("Synchronize Error!");
                 }
             }   
         });        
     }
-   jQuery("#url").on('submit', function(e){
-       e.preventDefault();
-       sync_wechat_is_debug = jQuery('select[name="debug"]').val() == 'on'; // refresh the debug status
+   jQuery("#Synchronize").on('click', function(e){
+       if(jQuery('select[name="debug"]').val() == 'on')
+          sync_wechat_is_debug = 1;
+       else if(jQuery('select[name="debug"]').val() == 'detail')
+          sync_wechat_is_debug = 2;           
        var sync_wechat_url_list_string = jQuery('textarea[name="given_urls"]').val();
-       sync_wechat_console.attr("style", "display:block");
+       if(sync_wechat_is_debug > 0)
+          sync_wechat_console.attr("style", "display:block");
        if(sync_wechat_url_list_string.length>0){
            sync_wechat_url_list = sync_wechat_url_list_string.split("\n");
            sync_wechat_submit_multiple();
@@ -210,7 +239,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
             var offset_to_sent = parseInt(jQuery('input[name="offset"]').val())
             // todo: alert the user that offset cannot be negative.
             sync_wechat_global_offset = offset_to_sent >=0 ? offset_to_sent : 0;           
-           sync_wechat_get_news();
+            sync_wechat_get_news();
        }
     }); 
 </script>

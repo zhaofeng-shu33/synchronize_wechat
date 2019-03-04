@@ -41,9 +41,9 @@ Note: The public IP address is used for the whitelist of the wechat public domai
 
 ### ToDo List
 
-* Handle video.
+* Improve user interface.
 * Handle original author.
-* Wechat url cache.
+
 ### Playing with the API
 
 ### Documentation
