@@ -94,8 +94,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 </div>
 </div>
 <textarea id="console" class="large-text code" rows="1" style="display:none"></textarea>
-<div id="dialog" title="Basic dialog">
-  <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+<div id="dialog" title="Prompt">
+  <p id="dialogText"></p>
 </div>
 <script>
 <?php 
@@ -103,10 +103,10 @@ $wp_scripts = wp_scripts();
 $jquery_ui_ver = $wp_scripts->registered['jquery-ui-core']->ver;
 
 wp_enqueue_script('jquery-ui-dialog');
-wp_enqueue_style('jquery-ui-css', 'http://cdn.bootcss.com/jqueryui/' . $jquery_ui_ver . '/jquery-ui.min.css'
-);?>
+wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .'.min.css', __FILE__)); 
+?>
     jQuery(document).ready(function(){
-        jQuery("#dialog").dialog();
+        jQuery("#dialog").dialog({autoOpen: false, modal: true});
     });
     jQuery("#expandControl").click(function () {
         var header = jQuery(this);
@@ -155,8 +155,16 @@ wp_enqueue_style('jquery-ui-css', 'http://cdn.bootcss.com/jqueryui/' . $jquery_u
                     if(jQuery('select[name="sync_wechat_history"]').val() == 'sync_wechat_Yes' && sync_wechat_get_url_list_termination == false && jQuery('textarea[name="given_urls"]').val() == "")
                         sync_wechat_get_news();
                  }
-                 if(sync_wechat_url_list.length == 0 && sync_wechat_is_debug == 0){
+                 if(sync_wechat_url_list.length == 0){
                      // notify the user the job finished.
+                    var articles = "articles";
+                    if(sync_wechat_submit_total_count == 1)
+                        articles = 'article;'
+                    if(sync_wechat_submit_total_count == 0)
+                        jQuery("#dialogText").text("Synchronize Error!");
+                    else
+                        jQuery("#dialogText").text("Successfully synchronize " + sync_wechat_submit_total_count + articles);                    
+                    jQuery("#dialog").dialog("open");                     
                  }
                      
              },
@@ -204,7 +212,8 @@ wp_enqueue_style('jquery-ui-css', 'http://cdn.bootcss.com/jqueryui/' . $jquery_u
                 var return_array = JSON.parse(data);
                 if(return_array.status_code < 0){
                     sync_wechat_console_writeline(data);
-                    alert("Synchronize Error!");
+                    jQuery("#dialogText").text("Synchronize Error!");
+                    jQuery("#dialog").dialog("open");
                     return;
                 }
                 var url_list = return_array.data.url_list;
@@ -230,12 +239,14 @@ wp_enqueue_style('jquery-ui-css', 'http://cdn.bootcss.com/jqueryui/' . $jquery_u
                     sync_wechat_console_writeline(jqXHR.responseText);
                 }
                 else if(sync_wechat_is_debug == 0){
-                    alert("Synchronize Error!");
+                    jQuery("#dialogText").text("Synchronize Error!");
+                    jQuery("#dialog").dialog("open");
                 }
             }   
         });        
     }
    jQuery("#Synchronize").on('click', function(e){
+       sync_wechat_submit_total_count = 0;
        if(jQuery('select[name="debug"]').val() == 'on')
           sync_wechat_is_debug = 1;
        else if(jQuery('select[name="debug"]').val() == 'detail')
