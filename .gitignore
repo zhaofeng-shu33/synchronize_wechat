@@ -1,4 +1,6 @@
 .vs/*
+*.zip
+nbproject/*
 asset/*
 !asset/README.md
 doc/*
