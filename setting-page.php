@@ -157,9 +157,9 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                  }
                  if(sync_wechat_url_list.length == 0){
                      // notify the user the job finished.
-                    var articles = "articles";
+                    var articles = " articles";
                     if(sync_wechat_submit_total_count == 1)
-                        articles = 'article;'
+                        articles = ' article';
                     if(sync_wechat_submit_total_count == 0)
                         jQuery("#dialogText").text("Synchronize Error!");
                     else
@@ -221,7 +221,7 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                 // issue new requests for each url in result_array
                 if(url_list.length == 0)
                     sync_wechat_get_url_list_termination = true;
-                else if(sync_wechat_is_debug == 1){ 
+                else{ 
                     sync_wechat_url_list = sync_wechat_url_list.concat(url_list);
                     sync_wechat_submit_multiple();  
                     if(!return_array.data.need_update){
