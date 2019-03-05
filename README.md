@@ -12,6 +12,9 @@ As a result, we try to implement a one.
 The official website we choose is based on `WordPress`, 
 but we believe similar solutions can be provided and customized if the general pipeline is worked out. 
 
+## Showcase
+![](demo.gif)
+
 ## Third party service
 This wordpress plugin relies on the third party service. The techinical document is [here](https://mp.weixin.qq.com/wiki).
 This plugin also uses third party PHP library, called [simple html dom](https://github.com/demonkoryu/php-simple-html-dom)
