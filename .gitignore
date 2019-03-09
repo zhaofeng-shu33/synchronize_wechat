@@ -1,5 +1,9 @@
 .DS_Store
 .vs/*
+*.zip
+nbproject/*
+clients/__pycache__/*
+clients/config.yaml
 asset/*
 svn/*
 deploy.sh
