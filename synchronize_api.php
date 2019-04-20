@@ -86,7 +86,8 @@ function sync_wechat_split_url($url_list_string){
 function sync_wechat_get_latest_post_publish_date(){
     $args = array(
         'numberposts' => 1,
-        'post_type' => 'post'
+        'post_type' => 'post',
+        'post_status' => 'publish'
     );
     $result_posts = wp_get_recent_posts($args);
     $latest_post_date_string = $result_posts[0]['post_date'];
