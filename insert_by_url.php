@@ -75,7 +75,7 @@ function sync_wechat_insert_by_url($url, $config = Null){
     return sync_wechat_insert_by_html($html, $config);
 }
 function sync_wechat_get_publish_date($html){
-    preg_match('/(publish_time = ")([^\"]+)"/', $html, $matches);
+    preg_match('/(",o=")([^\"]+)"/', $html, $matches);
     $postDate = isset($matches[2]) ? $matches[2] : current_time('timestamp');
     $postDate = date('Y-m-d H:i:s', strtotime($postDate));
     return $postDate;
