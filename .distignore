@@ -4,6 +4,9 @@
 demo.gif
 icon-256x256.png
 README.md
+.dpl
+.travis.yml
+/.travis
 /asset
 /.git
 /.github
