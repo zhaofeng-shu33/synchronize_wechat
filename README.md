@@ -1,3 +1,5 @@
+[![Documentation Status](https://readthedocs.org/projects/synchronize-wechat/badge/?version=latest)](https://synchronize-wechat.readthedocs.io/en/latest/?badge=latest)
+
 # synchronize wechat
 ![](icon-256x256.png)
 synchronize wechat post articles to wordpress website,
