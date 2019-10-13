@@ -93,7 +93,7 @@ function sync_wechat_insert_by_html($html, $config = Null){
     if ($post_id != 0) {
         //check whether post content is empty;
         if(strlen(get_post($post_id)->post_content)==0){
-            return sync_wechat_set_image($html, $post_id, $config);            
+            return sync_wechat_set_image($html, $post_id, $config);
         }
         return array('status_code' => $post_id, 'err_msg' => 'the article is already in the database');
     }
