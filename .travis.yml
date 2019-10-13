@@ -3,5 +3,5 @@ dist: xenial
 language: generic
 deploy:
   provider: script
-  sciprt: sh .travis/deploy.sh
+  script: sh .travis/deploy.sh
 
