@@ -4,4 +4,5 @@ language: generic
 deploy:
   provider: script
   script: sh .travis/deploy.sh
+  skip_cleanup: true
 
