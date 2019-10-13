@@ -6,7 +6,6 @@ clients/__pycache__/*
 clients/config.yaml
 asset/*
 svn/*
-deploy.sh
 !asset/README.md
 doc/*
 test2.php
