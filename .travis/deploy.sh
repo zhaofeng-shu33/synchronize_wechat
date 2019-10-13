@@ -1,5 +1,5 @@
 #!/bin/sh
-svn co -q "http://svn.wp-plugins.org/synchronize_wechat" /tmp/svn
+svn co -q "http://plugins.svn.wordpress.org/synchronize-wechat" /tmp/svn
 rsync -rc --exclude-from="./distignore" ./ /tmp/svn/trunk --delete
 cd /tmp/svn
 svn add .
