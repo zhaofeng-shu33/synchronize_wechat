@@ -1,4 +1,5 @@
 [![Documentation Status](https://readthedocs.org/projects/synchronize-wechat/badge/?version=latest)](https://synchronize-wechat.readthedocs.io/en/latest/?badge=latest)
+[![Build Status](https://travis-ci.com/zhaofeng-shu33/synchronize_wechat.svg?branch=master)](https://travis-ci.com/zhaofeng-shu33/synchronize_wechat)
 
 # synchronize wechat
 ![](icon-256x256.png)
