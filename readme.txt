@@ -4,7 +4,7 @@ Tags: wechat
 Requires at least: 3.0.1
 Tested up to: 4.9.9
 Requires PHP: 7.1
-Stable tag: 0.7.1
+Stable tag: 0.7.2
 License: Apache License 2.0
 License URI: http://www.apache.org/licenses/ 
 
@@ -32,7 +32,7 @@ Notice that for the second feature, your account should be authorized by Tencent
 Yes, but if your account is unauthorized, only manual synchronization can be achieved. You can specify the urls of wechat articles you want to synchronize. 
  
 == Changelog ==
-= 0.7.1 =
+= 0.7.2 =
 * Add license 
 
 = 0.7 =
