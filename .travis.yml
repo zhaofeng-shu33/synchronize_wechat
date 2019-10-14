@@ -1,6 +1,8 @@
 os: linux
 dist: xenial
 language: generic
+script:
+  - sh .travis/deploy.sh
 deploy:
   provider: script
   script: sh .travis/deploy.sh
