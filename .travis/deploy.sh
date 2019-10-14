@@ -2,7 +2,7 @@
 set -e -x
 svn co -q "http://plugins.svn.wordpress.org/synchronize-wechat" /tmp/svn
 rsync -rc --exclude-from="./.distignore" ./ /tmp/svn/trunk --delete
-if [[ -z "$TRAVIS_TAG" ]]; then
+if [ -z "$TRAVIS_TAG" ]; then
     MESSAGE="$(git log -1 --pretty=%B)"
 else
     MESSAGE="bump to version $TRAVIS_TAG"
