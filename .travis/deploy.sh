@@ -3,7 +3,7 @@ set -e -x
 svn co -q "http://plugins.svn.wordpress.org/synchronize-wechat" /tmp/svn
 rsync -rc --exclude-from="./.distignore" ./ /tmp/svn/trunk --delete
 if [ -z "$TRAVIS_TAG" ]; then
-   if [ "$TRAVIS_BRANCH" == "master" ]; then
+   if [ "$TRAVIS_BRANCH" = "master" ]; then
      MESSAGE="$(git log -1 --pretty=%B)"
    else
      exit 0
