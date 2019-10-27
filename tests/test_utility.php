@@ -9,7 +9,7 @@ function fetch_html($html_file_name, $url)
             return $html;
     }
         //check for right output of function `get_html`
-    $html = get_html($url);
+    $html = sync_wechat_get_html($url);
     file_put_contents($html_file_name, $html);
     return $html;
 }
