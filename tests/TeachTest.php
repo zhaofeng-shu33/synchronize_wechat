@@ -15,7 +15,7 @@ require_once "test_utility.php";
 class TeachTest extends TestCase
 {
     private $webpage_url = 'https://mp.weixin.qq.com/s/xGj6-Yu75FWQHc7qtK9AZg';
-    private $publish_date = '2018-08-03';
+    private $publish_date = '2018-08-03 12:46:14';
     private $image_url = 'http://mmbiz.qpic.cn/mmbiz_jpg/kNeT3AGutVYFPzwOfMnjX9coe2CdyZoMwHscMdH9VZHlbiblibgUVRsGqIjmM65jGgbniaA0ibfaSjKhUm6Jehia3gQ/0?wx_fmt=jpeg';
     private $image_name = 'mzxl_thu.jpeg';
     private $checksum_image_url = 'http://res.wx.qq.com/mmbizwap/zh_CN/htmledition/images/pic/appmsg/pic_reward_qrcode.2x3534dd.png';
