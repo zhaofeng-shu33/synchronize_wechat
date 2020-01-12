@@ -32,6 +32,9 @@ Notice that for the second feature, your account should be authorized by Tencent
 Yes, but if your account is unauthorized, only manual synchronization can be achieved. You can specify the urls of wechat articles you want to synchronize. 
  
 == Changelog ==
+= 0.7.3 =
+* remove sync video due to cross-site restriction
+
 = 0.7.2 =
 * Add license 
 
