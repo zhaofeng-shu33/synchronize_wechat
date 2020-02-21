@@ -8,7 +8,7 @@ if [ -z "$TRAVIS_TAG" ]; then
    else
      exit 0
    fi
-else
+elif [ "$TRAVIS_TAG" = "push" ]; then
     MESSAGE="bump to version $TRAVIS_TAG"
     VERSION=$(echo $TRAVIS_TAG | sed "s/v//")
     mkdir /tmp/svn/tags/$VERSION
@@ -17,3 +17,4 @@ fi
 cd /tmp/svn
 svn add . --force
 svn ci --no-auth-cache --non-interactive --username zhaofengshu33 --password $PASSWORD -m "$MESSAGE"
+
