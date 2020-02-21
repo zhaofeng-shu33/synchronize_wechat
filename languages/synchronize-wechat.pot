@@ -78,4 +78,4 @@ msgid "sync_wechat"
 msgstr ""
 
 msgid "synchronize wechat"
-msgstr "微信文章下载发布""
+msgstr ""
