@@ -15,12 +15,41 @@ require_once 'insert_by_url.php';
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 if (is_admin()) {
+	add_action( 'init', 'sw_load_plugin_textdomain' );
 	add_action('admin_menu', 'sync_wechat_admin_menu');
+}
+
+function sw_load_plugin_textdomain(){
+	$text_domain = 'synchronize-wechat';
+	$lang_dir = dirname( plugin_basename( __FILE__ ) ) . '/languages/';
+//     $lang_dir = apply_filters( 'synchronize-wechat_languages_directory', $lang_dir );
+
+	// Traditional WordPress plugin locale filter
+	$locale = apply_filters( 'plugin_locale',  get_locale(), $text_domain );
+	$mofile = sprintf( '%1$s-%2$s.mo', $text_domain, $locale );
+
+	// Setup paths to current locale file
+	$mofile_local  = $lang_dir . $mofile;
+	$mofile_global = WP_LANG_DIR . '/' . $text_domain . '/' . $mofile;
+
+	if( file_exists( $mofile_global ) ) {
+		// Look in global /wp-content/languages/plugin-name/ folder
+		load_textdomain( $text_domain, $mofile_global );
+	}
+	else if( file_exists( $mofile_local ) ) {
+		// Look in local /wp-content/plugins/plugin-name/languages/ folder
+		load_textdomain( $text_domain, $mofile_local );
+	}
+	else {
+		// Load the default language files
+		load_plugin_textdomain( $text_domain, false, $lang_dir );
+	}
 }
 
 //! \brief initialize admin menu as submenu under **Settings**
 function sync_wechat_admin_menu(){
-    add_options_page('sync_wechat options', 'sync_wechat', 'manage_options', 'sync_wechat-unique-identifier', 'sync_wechat_plugin_options');
+//     add_options_page('sync_wechat options', 'sync_wechat', 'manage_options', 'sync_wechat-unique-identifier', 'sync_wechat_plugin_options');
+	add_submenu_page('edit.php', __('sync_wechat', 'synchronize-wechat'), __('sync_wechat', 'synchronize-wechat'), 'edit_posts', 'sync_wechat-unique-identifier', 'sync_wechat_plugin_options');
     add_action('admin_init', 'sync_wechat_register_settings');
 }
 
@@ -46,7 +75,7 @@ function sync_wechat_set_config(){
     $postStatus     = isset($_POST['post_status']) && in_array(sanitize_text_field($_POST['post_status']), array('publish', 'pending', 'draft')) ?
                                             $_POST['post_status'] : 'publish';
     $keepStyle      = isset($_POST['keep_style']) && sanitize_text_field($_POST['keep_style']) == 'keep';
-    $keepSource      = isset($_POST['keep_source']) ? sanitize_text_field($_POST['keep_source']) == 'keep': true;    
+    $keepSource      = isset($_POST['keep_source']) ? sanitize_text_field($_POST['keep_source']) == 'keep': true;
 	$debug          = isset($_POST['debug']) ? sanitize_text_field($_POST['debug']) == 'on' : true;
     $config = array(
 		'changePostTime'  => $changePostTime,
@@ -55,7 +84,7 @@ function sync_wechat_set_config(){
         'keepSource' => $keepSource,
         'setFeatureImage' => true,
         'debug' => $debug
-    );    
+    );
     return $config;
 }
 
@@ -67,13 +96,13 @@ function sync_wechat_process_request(){
         if(isset($_POST['offset'])){
             $num = isset($_POST['num']) ? intval($_POST['num']) : 20;
             if($num <=0 || $num >20){
-                $return_array = array('status_code' => -10, 'err_msg' => 'invalid num given');            
+                $return_array = array('status_code' => -10, 'err_msg' => 'invalid num given');
             }
             $offset = intval($_POST['offset']);
-            $return_array = sync_wechat_get_history_url_by_offset($offset, $num, null, $date_check);            
+            $return_array = sync_wechat_get_history_url_by_offset($offset, $num, null, $date_check);
         }
         else{ //if no offset parameter, raise the error
-            $return_array = array('status_code' => -4, 'err_msg' => 'no offset parameter is given');  
+            $return_array = array('status_code' => -4, 'err_msg' => 'no offset parameter is given');
         }
     }
     else{ //    don't synchronize history articles, read url list from post data
