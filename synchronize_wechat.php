@@ -46,7 +46,7 @@ function sync_wechat_set_config(){
     $postStatus     = isset($_POST['post_status']) && in_array(sanitize_text_field($_POST['post_status']), array('publish', 'pending', 'draft')) ?
                                             $_POST['post_status'] : 'publish';
     $keepStyle      = isset($_POST['keep_style']) && sanitize_text_field($_POST['keep_style']) == 'keep';
-    $keepSource      = isset($_POST['keep_source']) ? sanitize_text_field($_POST['keep_source']) == 'keep': true;    
+    $keepSource      = isset($_POST['keep_source']) ? sanitize_text_field($_POST['keep_source']) == 'keep': true;
 	$debug          = isset($_POST['debug']) ? sanitize_text_field($_POST['debug']) == 'on' : true;
     $config = array(
 		'changePostTime'  => $changePostTime,
@@ -55,7 +55,7 @@ function sync_wechat_set_config(){
         'keepSource' => $keepSource,
         'setFeatureImage' => true,
         'debug' => $debug
-    );    
+    );
     return $config;
 }
 
@@ -67,13 +67,13 @@ function sync_wechat_process_request(){
         if(isset($_POST['offset'])){
             $num = isset($_POST['num']) ? intval($_POST['num']) : 20;
             if($num <=0 || $num >20){
-                $return_array = array('status_code' => -10, 'err_msg' => 'invalid num given');            
+                $return_array = array('status_code' => -10, 'err_msg' => 'invalid num given');
             }
             $offset = intval($_POST['offset']);
-            $return_array = sync_wechat_get_history_url_by_offset($offset, $num, null, $date_check);            
+            $return_array = sync_wechat_get_history_url_by_offset($offset, $num, null, $date_check);
         }
         else{ //if no offset parameter, raise the error
-            $return_array = array('status_code' => -4, 'err_msg' => 'no offset parameter is given');  
+            $return_array = array('status_code' => -4, 'err_msg' => 'no offset parameter is given');
         }
     }
     else{ //    don't synchronize history articles, read url list from post data

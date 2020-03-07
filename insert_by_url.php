@@ -30,7 +30,7 @@ function sync_wechat_get_html($url, $timeout = 30){
     if(strpos($html, 'js_content') > 0 ){
         return $html;
     }
-    $response = wp_safe_remote_get( $url, array( 'timeout' => $timeout) );    
+    $response = wp_safe_remote_get( $url, array( 'timeout' => $timeout) );
     $html = wp_remote_retrieve_body($response);
     file_put_contents($file_name, $html);
     return $html;
@@ -48,7 +48,7 @@ function sync_wechat_get_html($url, $timeout = 30){
 *		    'postStatus'[choice,default:publish]: article status
 *           'postType'[choice,default:post]: article type
 *		    'keepStyle'[bool,default:false]: whether the css of the article is kept
-*           'keepSource'[bool, default:true]: whether the original source info is kept 
+*           'keepSource'[bool, default:true]: whether the original source info is kept
 *	    	'postCate'[choice,default:not_classcified]: the classification to put the article
 *           'setFeatureImage'[bool,default:true]: whether to set the feature image
 *           'debug'[bool, default:true]: whether to turn on debug mode, debug mode will output more detailed information
@@ -59,7 +59,7 @@ function sync_wechat_get_html($url, $timeout = 30){
 *
 *     $status = {
 *         'status_code'[int]: if status_code = 0, error occurs
-*         'err_msg'[str]: if no error, empty str      
+*         'err_msg'[str]: if no error, empty str
 *     }
 * \endparblock
 */
@@ -109,7 +109,7 @@ function sync_wechat_insert_by_html($html, $config = Null){
     if (!$keepStyle) {
             $html = preg_replace('/style\=\"[^\"]*\"/', '', $html);
     }
-    
+
     // default is draft
     $postStatus = isset($config['postStatus']) && in_array($config['postStatus'], array('publish', 'pending', 'draft')) ?
                                 $config['postStatus'] : 'draft';
@@ -123,7 +123,7 @@ function sync_wechat_insert_by_html($html, $config = Null){
         $userId = get_current_user_id();
     }
     // article category, default is Uncategorized
-    $cates = isset($config['postCate'])? $config['postCate'] : ''; 	
+    $cates = isset($config['postCate'])? $config['postCate'] : '';
     if ($cates) {
         $cateIds = array();
         foreach ($cates as $cate) {
@@ -136,7 +136,7 @@ function sync_wechat_insert_by_html($html, $config = Null){
         $postCate = $cateIds;
 }
     else{
-        $postCate = array(1);        
+        $postCate = array(1);
     }
     $post = array(
             'post_title'    => $title,
@@ -167,7 +167,7 @@ function sync_wechat_check_image_exists($postId, $image_name){
         'post_mime_type' => 'image'
         ));
     $media_array = array_merge($media_array_unattached, get_attached_media('image', $postId));
-    
+
 	foreach ($media_array as $media_object) {
         $attached_image_id = $media_object->ID;
         try{
@@ -293,9 +293,9 @@ function sync_wechat_set_image($html, $postId, $config = Null){
         }
         $imageDom->setAttribute('src', $dataSrc);
     }
- 
+
     sync_wechat_process_video($dom);
-    
+
     // images must be downloaded to local file system
     return sync_wechat_download_image($postId, $dom, $config);
 }
@@ -318,12 +318,12 @@ function sync_wechat_resolve_bg_image(&$content, $postId){
         $return_array = sync_wechat_upload_image($image_url, $postId);
         $id = $return_array['status_code'];
         $imageInfo = wp_get_attachment_image_src($id, 'full');
-        $src       = $imageInfo[0];   
+        $src       = $imageInfo[0];
         $content = preg_replace($re, 'background-image: url(&qquot;'. $src . '&qquot;)', $content, 1);
         $matches = array();
         preg_match($re, $content, $matches);
     }
-    $content = str_replace('&qquot;', '&quot;', $content);    
+    $content = str_replace('&qquot;', '&quot;', $content);
 }
 //! \brief resolve article origin, called by ::sync_wechat_download_image
 function sync_wechat_resolve_origin($dom){
@@ -352,7 +352,7 @@ function sync_wechat_process_video(&$dom){
 function sync_wechat_download_image($postId, $dom, $config = Null) {
 	$images            = $dom->find('img');
 	$centeredImage     = get_option('sync_wechat_image_centered', 'no') == 'yes';
-    
+
     foreach ($images as $image) {
         $src  = $image->getAttribute('src');
         if (!$src) {
@@ -372,7 +372,7 @@ function sync_wechat_download_image($postId, $dom, $config = Null) {
         if($id < 0){
             if($config['debug']){
                 $return_array['article_id'] = $postId;
-                return $return_array;    
+                return $return_array;
             }
             else
                 continue;
@@ -388,7 +388,7 @@ function sync_wechat_download_image($postId, $dom, $config = Null) {
     sync_wechat_resolve_bg_image($content, $postId);
     $origin = sync_wechat_resolve_origin($dom);
 
-    
+
     $keepSource = isset($config['keepSource']) ? $config['keepSource'] : true;
     if ($keepSource) {
         $source = "<blockquote class='keep-source'>" .
@@ -405,6 +405,6 @@ function sync_wechat_download_image($postId, $dom, $config = Null) {
     if(is_wp_error($return_postID)){
         return array('status_code' => -7, 'err_msg' => $return_postID->get_error_message());
     }
-    return array('status_code' => $postId, 'err_msg' => 'create post successfully');    
+    return array('status_code' => $postId, 'err_msg' => 'create post successfully');
 }
 ?>
