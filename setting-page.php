@@ -11,7 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         <th scope="row">AppId</th>
         <td><input type="text" name="appid" value="<?php echo esc_attr( get_option('appid') ); ?>" /></td>
         </tr>
-         
+
         <tr valign="top">
         <th scope="row">AppSecret</th>
         <td><input type="text" name="appsecret" value="<?php echo esc_attr( get_option('appsecret') ); ?>" /></td>
@@ -39,8 +39,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                 <option value="sync_wechat_Yes">Yes</option>
                 <option value="sync_wechat_No" selected>No</option>
         </select>
-     </td>     
-     </tr>    
+     </td>
+     </tr>
     <tr>
      <th scope="row"><label for="keep_style">Keep original style</label></th>
      <td>
@@ -56,7 +56,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                 <option value="pending">pending</option>
                 <option value="pending">draft</option>                
         </select>
-     </td>       
+     </td>
      </tr>
     <tr>
      <th scope="row"><label for="keep_source">Keep original source info</label></th>
@@ -73,7 +73,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
                 <option value="on">basic</option>
                 <option value="detail">detail</option>                
         </select>
-     </td>      
+     </td>
      </tr>
     <tr>
      <th scope="row"><label for="check_date">Check date</label></th>
@@ -86,8 +86,8 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
      <th scope="row"><label for="offset">Offset</label></th>
      <td>
          <input name="offset" type="number" step="1" value="0"/>
-     </td>      
-     </tr>     
+     </td>
+     </tr>
 </table>
 <div>
 <button class="button button-primary" id="Synchronize" style="margin-bottom:10px;">Synchronize</button>
@@ -98,12 +98,12 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
   <p id="dialogText"></p>
 </div>
 <script>
-<?php 
+<?php
 $wp_scripts = wp_scripts();
 $jquery_ui_ver = $wp_scripts->registered['jquery-ui-core']->ver;
 
 wp_enqueue_script('jquery-ui-dialog');
-wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .'.min.css', __FILE__)); 
+wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .'.min.css', __FILE__));
 ?>
     jQuery(document).ready(function(){
         jQuery("#dialog").dialog({autoOpen: false, modal: true});
@@ -145,7 +145,7 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                  if(data_json['status_code'] < 0 && sync_wechat_is_debug == 2)
                     extra_info = '*' + url;
                  if(data_json['status_code'] >= 0)
-                    sync_wechat_submit_total_count += 1; 
+                    sync_wechat_submit_total_count += 1;
                  sync_wechat_console_writeline(data + extra_info)
                  var new_url = sync_wechat_url_list.pop();
                  if(new_url != undefined){
@@ -163,8 +163,8 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                     if(sync_wechat_submit_total_count == 0)
                         jQuery("#dialogText").text("Synchronize Error!");
                     else
-                        jQuery("#dialogText").text("Successfully synchronize " + sync_wechat_submit_total_count + articles);                    
-                    jQuery("#dialog").dialog("open");                     
+                        jQuery("#dialogText").text("Successfully synchronize " + sync_wechat_submit_total_count + articles);
+                    jQuery("#dialog").dialog("open");
                  }
                      
              },
@@ -174,15 +174,15 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                     sync_wechat_console_writeline(url);
                     sync_wechat_console_writeline(jqXHR.responseText);
                 }
-            }           
-        })        
+            }
+        })
     }
     function sync_wechat_submit_multiple(){
         var submitted_length = sync_wechat_url_list.length;
         for(var i = 0; i < Math.min(5, submitted_length); i++){ 
             var url = sync_wechat_url_list.pop();
             sync_wechat_submit_single(url);
-        }          
+        }
     }
 
     //! content added to the console
@@ -196,13 +196,13 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
     }
     function sync_wechat_get_news(){
 
-        var data_to_sent = 
+        var data_to_sent =
                    {'action':'sync_wechat_process_request',
                     'offset': sync_wechat_global_offset,
                     'sync_wechat_history':jQuery('select[name="sync_wechat_history"]').val(),
                     'sync_wechat_date_check': jQuery('select[name="check_date"]').val()
                    };
-        sync_wechat_global_offset += 20;           
+        sync_wechat_global_offset += 20;
         jQuery.ajax({
             type: "POST",
             url: ajaxurl,
@@ -221,9 +221,9 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                 // issue new requests for each url in result_array
                 if(url_list.length == 0)
                     sync_wechat_get_url_list_termination = true;
-                else{ 
+                else{
                     sync_wechat_url_list = sync_wechat_url_list.concat(url_list);
-                    sync_wechat_submit_multiple();  
+                    sync_wechat_submit_multiple();
                     if(!return_array.data.need_update){
                         sync_wechat_get_url_list_termination = true;
                     }                                    
