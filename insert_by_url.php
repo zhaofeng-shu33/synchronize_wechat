@@ -237,7 +237,7 @@ function sync_wechat_upload_image($url, $postId, $image_name = Null){
 		);
         if($r_post_id == 0){
 	    $return_obj = media_handle_sideload($fileArr, $postId);
-            @unlink(tmpFile);
+            @unlink($tmpFile);
             if (!is_wp_error($return_obj)) { // upload sucessfully
                 return array('status_code' => $return_obj, 'err_msg' => 'upload successfully');
 	    }
@@ -246,7 +246,7 @@ function sync_wechat_upload_image($url, $postId, $image_name = Null){
             }
         }
         else{ // image already exists
-            @unlink(tmpFile);
+            @unlink($tmpFile);
             return $return_array;
         }
 	}
