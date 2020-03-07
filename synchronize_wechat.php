@@ -6,6 +6,8 @@ Description: synchronize wechat articles to wordpress website
 Author: zhaofeng-shu33
 Version: 0.7.2
 Author URI: https://github.com/zhaofeng-shu33
+Text Domain: synchronize-wechat
+Domain Path: /languages/
 */
 /**
  * @file synchronize_wechat.php
