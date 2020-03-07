@@ -20,7 +20,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 <?php submit_button(); ?>
 </form>
 <div id="url" style="display:flex;flex-direction:column;">
-<textarea type="text" name="given_urls" class="large-text code" rows="3" placeholder="Paste urls of articles here, one url per line..."></textarea>         
+<textarea type="text" name="given_urls" class="large-text code" rows="3" placeholder="Paste urls of articles here, one url per line..."></textarea>
 <div>
 <button class="button button-primary" id="expandControl" style="margin-bottom:10px; margin-top:10px;">Advanced</button>
 </div>
@@ -54,7 +54,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         <select name="post_status">
                 <option value="publish" selected>publish</option>
                 <option value="pending">pending</option>
-                <option value="pending">draft</option>                
+                <option value="pending">draft</option>
         </select>
      </td>
      </tr>
@@ -71,7 +71,7 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
         <select name="debug">
                 <option value="off" selected>off</option>
                 <option value="on">basic</option>
-                <option value="detail">detail</option>                
+                <option value="detail">detail</option>
         </select>
      </td>
      </tr>
@@ -166,7 +166,7 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                         jQuery("#dialogText").text("Successfully synchronize " + sync_wechat_submit_total_count + articles);
                     jQuery("#dialog").dialog("open");
                  }
-                     
+
              },
             error: function(jqXHR, textStatus, errorThrown){
                 sync_wechat_console_writeline(textStatus + '*'+ errorThrown);
@@ -179,7 +179,7 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
     }
     function sync_wechat_submit_multiple(){
         var submitted_length = sync_wechat_url_list.length;
-        for(var i = 0; i < Math.min(5, submitted_length); i++){ 
+        for(var i = 0; i < Math.min(5, submitted_length); i++){
             var url = sync_wechat_url_list.pop();
             sync_wechat_submit_single(url);
         }
@@ -226,11 +226,11 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                     sync_wechat_submit_multiple();
                     if(!return_array.data.need_update){
                         sync_wechat_get_url_list_termination = true;
-                    }                                    
-                }                
+                    }
+                }
                 if(sync_wechat_is_debug > 0){ // debug mode is on, do not issue submit multiple request
                     sync_wechat_console_writeline(url_list.join("\n"), url_list.length);
-                }                
+                }
             },
             error: function(jqXHR, textStatus, errorThrown){
                 sync_wechat_console_writeline(textStatus + '*' + errorThrown);
@@ -242,15 +242,15 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
                     jQuery("#dialogText").text("Synchronize Error!");
                     jQuery("#dialog").dialog("open");
                 }
-            }   
-        });        
+            }
+        });
     }
    jQuery("#Synchronize").on('click', function(e){
        sync_wechat_submit_total_count = 0;
        if(jQuery('select[name="debug"]').val() == 'on')
           sync_wechat_is_debug = 1;
        else if(jQuery('select[name="debug"]').val() == 'detail')
-          sync_wechat_is_debug = 2;           
+          sync_wechat_is_debug = 2;
        var sync_wechat_url_list_string = jQuery('textarea[name="given_urls"]').val();
        if(sync_wechat_is_debug > 0)
           sync_wechat_console.attr("style", "display:block");
@@ -262,9 +262,9 @@ wp_enqueue_style('jquery-ui-css', plugins_url('css/jquery-ui-'. $jquery_ui_ver .
             // reset global offset
             var offset_to_sent = parseInt(jQuery('input[name="offset"]').val())
             // todo: alert the user that offset cannot be negative.
-            sync_wechat_global_offset = offset_to_sent >=0 ? offset_to_sent : 0;           
+            sync_wechat_global_offset = offset_to_sent >=0 ? offset_to_sent : 0;
             sync_wechat_get_news();
        }
-    }); 
+    });
 </script>
 </div>
