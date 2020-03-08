@@ -1,0 +1,81 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-02-21 09:18+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../setting-page.php:23
+msgid "Paste urls of articles here, one url per line..."
+msgstr ""
+
+#: ../setting-page.php:25
+msgid "Advanced"
+msgstr ""
+
+#: ../setting-page.php:29
+msgid "Get preivous articles"
+msgstr ""
+
+#: ../setting-page.php:36
+msgid "Use current time to publish"
+msgstr ""
+
+#: ../setting-page.php:45
+msgid "Keep original style"
+msgstr ""
+
+#: ../setting-page.php:52
+msgid "Default post status"
+msgstr ""
+
+#: ../setting-page.php:55
+msgid "publish"
+msgstr ""
+
+#: ../setting-page.php:56
+msgid "pending"
+msgstr ""
+
+#: ../setting-page.php:57
+msgid "draft"
+msgstr ""
+
+#: ../setting-page.php:62
+msgid "Keep original source info"
+msgstr ""
+
+#: ../setting-page.php:69
+msgid "Debug mode"
+msgstr ""
+
+#: ../setting-page.php:79
+msgid "Check date"
+msgstr ""
+
+#: ../setting-page.php:86
+msgid "Offset"
+msgstr ""
+
+#: ../setting-page.php:93
+msgid "Synchronize"
+msgstr ""
+
+#: ../synchronize_wechat.php:52
+msgid "sync_wechat"
+msgstr ""
+
+msgid "synchronize wechat"
+msgstr ""

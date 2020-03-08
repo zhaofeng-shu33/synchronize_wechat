@@ -2,7 +2,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 ?>
 <div>
-<h1> synchronize wechat </h1>
+<h1><?php echo __('synchronize wechat', 'synchronize-wechat');?></h1>
 <form method="post" action="options.php">
 <?php settings_fields('sync_wechat-settings-group'); ?>
  <!--tab implementation in the future -->
@@ -20,53 +20,53 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
 <?php submit_button(); ?>
 </form>
 <div id="url" style="display:flex;flex-direction:column;">
-<textarea type="text" name="given_urls" class="large-text code" rows="3" placeholder="Paste urls of articles here, one url per line..."></textarea>
+<textarea type="text" name="given_urls" class="large-text code" rows="3" placeholder="<?php echo __('Paste urls of articles here, one url per line...' ,'synchronize-wechat') ?>"></textarea>
 <div>
-<button class="button button-primary" id="expandControl" style="margin-bottom:10px; margin-top:10px;">Advanced</button>
+<button class="button button-primary" id="expandControl" style="margin-bottom:10px; margin-top:10px;"><?php echo __('Advanced', 'synchronize-wechat');?></button>
 </div>
 <table class="form-table" style="display:none;" id="synchronize-table">
     <tr>
-     <th scope="row"><label for="sync_wechat_history">Get preivous articles</label></th>
+     <th scope="row"><label for="sync_wechat_history"><?php echo __('Get preivous articles', 'synchronize-wechat'); ?></label></th>
      <td>
         <select name="sync_wechat_history">
-                <option value="sync_wechat_Yes" selected>Yes</option>
-                <option value="sync_wechat_No">No</option>
+                <option value="sync_wechat_Yes" selected><?php echo __('Yes'); ?></option>
+                <option value="sync_wechat_No"><?php echo __('No'); ?></option>
         </select>
      </td>
-     <th scope="row"><label for="change_post_time">Use current time to publish</label></th>
+     <th scope="row"><label for="change_post_time"><?php echo __('Use current time to publish', 'synchronize-wechat'); ?></label></th>
      <td>
         <select name="change_post_time">
-                <option value="sync_wechat_Yes">Yes</option>
-                <option value="sync_wechat_No" selected>No</option>
+                <option value="sync_wechat_Yes"><?php echo __('Yes'); ?></option>
+                <option value="sync_wechat_No" selected><?php echo __('No'); ?></option>
         </select>
      </td>
      </tr>
     <tr>
-     <th scope="row"><label for="keep_style">Keep original style</label></th>
+     <th scope="row"><label for="keep_style"><?php echo __('Keep original style', 'synchronize-wechat'); ?></label></th>
      <td>
         <select name="keep_style">
-                <option value="keep" selected>Yes</option>
-                <option value="remove">No</option>
+                <option value="keep" selected><?php echo __('Yes'); ?></option>
+                <option value="remove"><?php echo __('No'); ?></option>
         </select>
      </td>
-     <th scope="row"><label for="post_status">Default post status</label></th>
+     <th scope="row"><label for="post_status"><?php echo __('Default post status', 'synchronize-wechat'); ?></label></th>
      <td>
         <select name="post_status">
-                <option value="publish" selected>publish</option>
-                <option value="pending">pending</option>
-                <option value="pending">draft</option>
+                <option value="publish" selected><?php echo __('publish', 'synchronize-wechat'); ?></option>
+                <option value="pending"><?php echo __('pending', 'synchronize-wechat'); ?></option>
+                <option value="pending"><?php echo __('draft', 'synchronize-wechat'); ?></option>
         </select>
      </td>
      </tr>
     <tr>
-     <th scope="row"><label for="keep_source">Keep original source info</label></th>
+     <th scope="row"><label for="keep_source"><?php echo __('Keep original source info', 'synchronize-wechat'); ?></label></th>
      <td>
         <select name="keep_source">
-                <option value="keep" selected>Yes</option>
-                <option value="remove">No</option>
+                <option value="keep" selected><?php echo __('Yes'); ?></option>
+                <option value="remove"><?php echo __('No'); ?></option>
         </select>
      </td>
-     <th scope="row"><label for="debug">Debug mode</label></th>
+     <th scope="row"><label for="debug"><?php echo __('Debug mode', 'synchronize-wechat'); ?></label></th>
      <td>
         <select name="debug">
                 <option value="off" selected>off</option>
@@ -76,21 +76,21 @@ if ( ! defined( 'ABSPATH' ) ) exit; // Exit if accessed directly
      </td>
      </tr>
     <tr>
-     <th scope="row"><label for="check_date">Check date</label></th>
+     <th scope="row"><label for="check_date"><?php echo __('Check date', 'synchronize-wechat'); ?></label></th>
      <td>
         <select name="check_date">
-                <option value="Yes" selected>Yes</option>
-                <option value="No">No</option>
+                <option value="Yes" selected><?php echo __('Yes'); ?></option>
+                <option value="No"><?php echo __('No'); ?></option>
         </select>
      </td>
-     <th scope="row"><label for="offset">Offset</label></th>
+     <th scope="row"><label for="offset"><?php echo __('Offset', 'synchronize-wechat'); ?></label></th>
      <td>
          <input name="offset" type="number" step="1" value="0"/>
      </td>
      </tr>
 </table>
 <div>
-<button class="button button-primary" id="Synchronize" style="margin-bottom:10px;">Synchronize</button>
+<button class="button button-primary" id="Synchronize" style="margin-bottom:10px;"><?php echo __('Synchronize', 'synchronize-wechat'); ?></button>
 </div>
 </div>
 <textarea id="console" class="large-text code" rows="1" style="display:none"></textarea>

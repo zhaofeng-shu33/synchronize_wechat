@@ -6,6 +6,8 @@ Description: synchronize wechat articles to wordpress website
 Author: zhaofeng-shu33
 Version: 0.7.2
 Author URI: https://github.com/zhaofeng-shu33
+Text Domain: synchronize-wechat
+Domain Path: /languages/
 */
 /**
  * @file synchronize_wechat.php
@@ -15,12 +17,20 @@ require_once 'insert_by_url.php';
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 if (is_admin()) {
+	add_action( 'init', 'sw_load_plugin_textdomain' );
 	add_action('admin_menu', 'sync_wechat_admin_menu');
+}
+
+function sw_load_plugin_textdomain(){
+	$text_domain = 'synchronize-wechat';
+	$lang_dir = dirname( plugin_basename( __FILE__ ) ) . '/languages/';
+	load_plugin_textdomain( $text_domain, false, $lang_dir );
 }
 
 //! \brief initialize admin menu as submenu under **Settings**
 function sync_wechat_admin_menu(){
-    add_options_page('sync_wechat options', 'sync_wechat', 'manage_options', 'sync_wechat-unique-identifier', 'sync_wechat_plugin_options');
+//     add_options_page('sync_wechat options', 'sync_wechat', 'manage_options', 'sync_wechat-unique-identifier', 'sync_wechat_plugin_options');
+	add_submenu_page('edit.php', __('sync_wechat', 'synchronize-wechat'), __('sync_wechat', 'synchronize-wechat'), 'edit_posts', 'sync_wechat-unique-identifier', 'sync_wechat_plugin_options');
     add_action('admin_init', 'sync_wechat_register_settings');
 }
 
