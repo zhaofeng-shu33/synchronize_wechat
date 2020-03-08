@@ -24,28 +24,7 @@ if (is_admin()) {
 function sw_load_plugin_textdomain(){
 	$text_domain = 'synchronize-wechat';
 	$lang_dir = dirname( plugin_basename( __FILE__ ) ) . '/languages/';
-//     $lang_dir = apply_filters( 'synchronize-wechat_languages_directory', $lang_dir );
-
-	// Traditional WordPress plugin locale filter
-	$locale = apply_filters( 'plugin_locale',  get_locale(), $text_domain );
-	$mofile = sprintf( '%1$s-%2$s.mo', $text_domain, $locale );
-
-	// Setup paths to current locale file
-	$mofile_local  = $lang_dir . $mofile;
-	$mofile_global = WP_LANG_DIR . '/' . $text_domain . '/' . $mofile;
-
-	if( file_exists( $mofile_global ) ) {
-		// Look in global /wp-content/languages/plugin-name/ folder
-		load_textdomain( $text_domain, $mofile_global );
-	}
-	else if( file_exists( $mofile_local ) ) {
-		// Look in local /wp-content/plugins/plugin-name/languages/ folder
-		load_textdomain( $text_domain, $mofile_local );
-	}
-	else {
-		// Load the default language files
-		load_plugin_textdomain( $text_domain, false, $lang_dir );
-	}
+	load_plugin_textdomain( $text_domain, false, $lang_dir );
 }
 
 //! \brief initialize admin menu as submenu under **Settings**
