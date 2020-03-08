@@ -2,5 +2,6 @@ os: linux
 dist: xenial
 language: generic
 script:
+  - bash .travis/build.sh
   - sh .travis/deploy.sh
 
