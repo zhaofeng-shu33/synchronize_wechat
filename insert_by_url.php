@@ -82,7 +82,7 @@ function sync_wechat_get_publish_date($html){
 }
 //! \brief insert $wpdb from html, called by ::sync_wechat_insert_by_url
 function sync_wechat_insert_by_html($html, $config = Null){
-    preg_match('/(msg_title = ")([^\"]+)"/', $html, $matches);
+    preg_match("/(msg_title = ')([^\"]+)'/", $html, $matches);
     // make sure the title of the article exists
     if (count($matches)==0) {
         return array('status_code' => -3, 'err_msg' => 'cannot get title from html');
